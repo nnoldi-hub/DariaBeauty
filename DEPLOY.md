@@ -15,12 +15,12 @@
 
 ### 1️⃣ Pregătire cPanel
 
-1. **Creează Baza de Date MySQL**
+1. **Creează Baza de Date MySQL** ✅ COMPLETAT
    - Accesează **MySQL Database Wizard** din cPanel
-   - Creează o bază nouă: `dariabeauty_db`
-   - Creează user: `dariabeauty_user`
-   - Setează parolă puternică
-   - Acordă **ALL PRIVILEGES**
+   - Bază creată: `ooxlvzey_dariabeauty`
+   - User creat: `ooxlvzey_daria`
+   - Parolă: `PetreIonel205!`
+   - **ALL PRIVILEGES** acordate
 
 2. **Activează SSH Access** (opțional, recomandat)
    - Contact support Hostico pentru activare SSH
@@ -70,28 +70,30 @@
    cp .env.example .env
    ```
 
-4. Editează `.env` cu datele tale:
+4. Editează `.env` cu datele tale (VALORILE REALE DE PE HOSTICO):
    ```env
    APP_NAME=DariaBeauty
    APP_ENV=production
    APP_DEBUG=false
-   APP_URL=https://dariabeauty.ro
+   APP_URL=https://yourdomain.hostico.ro
 
    DB_CONNECTION=mysql
    DB_HOST=localhost
    DB_PORT=3306
-   DB_DATABASE=dariabeauty_db
-   DB_USERNAME=dariabeauty_user
-   DB_PASSWORD=your_secure_password
+   DB_DATABASE=ooxlvzey_dariabeauty
+   DB_USERNAME=ooxlvzey_daria
+   DB_PASSWORD=PetreIonel205!
 
    MAIL_MAILER=smtp
-   MAIL_HOST=mail.dariabeauty.ro
+   MAIL_HOST=mail.yourdomain.hostico.ro
    MAIL_PORT=587
-   MAIL_USERNAME=noreply@dariabeauty.ro
+   MAIL_USERNAME=noreply@yourdomain.hostico.ro
    MAIL_PASSWORD=your_email_password
    MAIL_ENCRYPTION=tls
-   MAIL_FROM_ADDRESS=noreply@dariabeauty.ro
+   MAIL_FROM_ADDRESS=noreply@yourdomain.hostico.ro
    ```
+
+   **NOTĂ IMPORTANTĂ**: Înlocuiește `yourdomain.hostico.ro` cu domeniul tău real!
 
 #### B. Rulare Comenzi Laravel (prin SSH)
 
