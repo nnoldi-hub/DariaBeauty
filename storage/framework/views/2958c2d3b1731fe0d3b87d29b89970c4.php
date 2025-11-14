@@ -259,6 +259,11 @@
                         <li class="nav-item ms-3">
                             <a class="nav-link" href="<?php echo e(route('login')); ?>">Autentificare</a>
                         </li>
+                        <li class="nav-item ms-2">
+                            <a class="nav-link text-primary" href="<?php echo e(route('register')); ?>">
+                                <i class="fas fa-user-plus me-1"></i>Inregistrare
+                            </a>
+                        </li>
                     <?php endif; ?>
                 </ul>
             </div>
@@ -310,6 +315,7 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <p class="text-white-50 mb-0">&copy; 2024 DariaBeauty. Toate drepturile rezervate.</p>
+                    <p class="text-white-50 mb-0 small">Created by <a href="https://conectica-it.ro" target="_blank" class="text-warning text-decoration-none">conectica-it.ro</a></p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <a href="#" class="text-white-50 text-decoration-none me-3">Termeni si conditii</a>
