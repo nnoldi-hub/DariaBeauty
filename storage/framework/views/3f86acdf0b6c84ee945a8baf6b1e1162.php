@@ -1,8 +1,8 @@
-@extends('layout')
 
-@section('title', 'Setari Cookie-uri - DariaBeauty')
 
-@section('content')
+<?php $__env->startSection('title', 'Setari Cookie-uri - DariaBeauty'); ?>
+
+<?php $__env->startSection('content'); ?>
 <div class="container py-5" style="margin-top: 80px;">
     <div class="row justify-content-center">
         <div class="col-lg-10">
@@ -261,8 +261,8 @@
                     <div class="alert alert-secondary">
                         <i class="fas fa-file-alt me-2"></i>
                         Pentru mai multe detalii despre cum folosim cookie-urile și procesăm datele tale, consultă 
-                        <a href="{{ route('privacy') }}" class="alert-link">Politica de Confidențialitate</a> și 
-                        <a href="{{ route('terms') }}" class="alert-link">Termenii și Condițiile</a> noastre.
+                        <a href="<?php echo e(route('privacy')); ?>" class="alert-link">Politica de Confidențialitate</a> și 
+                        <a href="<?php echo e(route('terms')); ?>" class="alert-link">Termenii și Condițiile</a> noastre.
                     </div>
 
                     <!-- Success Message -->
@@ -273,7 +273,7 @@
 
                     <!-- Navigation Buttons -->
                     <div class="text-center mt-5">
-                        <a href="{{ url('/') }}" class="btn btn-outline-primary rounded-pill px-5">
+                        <a href="<?php echo e(url('/')); ?>" class="btn btn-outline-primary rounded-pill px-5">
                             <i class="fas fa-home me-2"></i>Înapoi la Homepage
                         </a>
                     </div>
@@ -283,7 +283,7 @@
     </div>
 </div>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Load saved preferences
@@ -326,7 +326,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function saveCookiePreferences(message) {
         const preferences = {
-            essential: true,
             functional: document.getElementById('functionalCookies').checked,
             analytics: document.getElementById('analyticsCookies').checked,
             marketing: document.getElementById('marketingCookies').checked,
@@ -334,7 +333,6 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         localStorage.setItem('cookiePreferences', JSON.stringify(preferences));
-        localStorage.setItem('cookieConsent', JSON.stringify(preferences));
 
         // Show success message
         const successMessage = document.getElementById('successMessage');
@@ -368,5 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-@endpush
-@endsection
+<?php $__env->stopPush(); ?>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layout', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\wamp64\www\Daria-Beauty\dariabeauty\resources\views/cookies.blade.php ENDPATH**/ ?>
