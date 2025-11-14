@@ -326,6 +326,9 @@
         </div>
     </footer>
 
+    <!-- Cookie Consent Banner -->
+    <?php echo $__env->make('components.cookie-consent', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
