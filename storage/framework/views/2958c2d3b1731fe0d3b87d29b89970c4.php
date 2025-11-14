@@ -318,8 +318,9 @@
                     <p class="text-white-50 mb-0 small">Created by <a href="https://conectica-it.ro" target="_blank" class="text-warning text-decoration-none">conectica-it.ro</a></p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <a href="#" class="text-white-50 text-decoration-none me-3">Termeni si conditii</a>
-                    <a href="#" class="text-white-50 text-decoration-none">Politica de confidentialitate</a>
+                    <a href="<?php echo e(route('terms')); ?>" class="text-white-50 text-decoration-none me-3">Termeni si conditii</a>
+                    <a href="<?php echo e(route('privacy')); ?>" class="text-white-50 text-decoration-none me-3">Politica de confidentialitate</a>
+                    <a href="<?php echo e(route('cookies')); ?>" class="text-white-50 text-decoration-none"><i class="fas fa-cookie-bite me-1"></i>Setari Cookies</a>
                 </div>
             </div>
         </div>

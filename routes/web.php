@@ -49,9 +49,10 @@ Route::post('/inregistrare-specialist', [HomeController::class, 'specialistRegis
 // Meniu public suplimentar
 Route::get('/servicii', [HomeController::class, 'services'])->name('services');
 Route::get('/galerie', [HomeController::class, 'gallery'])->name('gallery');
-// Termeni si conditii + Politica de confidentialitate
+// Termeni si conditii + Politica de confidentialitate + Cookies
 Route::view('/termeni-si-conditii', 'terms')->name('terms');
 Route::view('/politica-confidentialitate', 'privacy')->name('privacy');
+Route::view('/setari-cookies', 'cookies')->name('cookies');
 Route::get('/programeaza-te', [HomeController::class, 'bookingLanding'])->name('booking.landing');
 
 // Cautare si filtrare
