@@ -310,6 +310,7 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <p class="text-white-50 mb-0">&copy; 2024 DariaBeauty. Toate drepturile rezervate.</p>
+                    <p class="text-white-50 mb-0 small">Created by <a href="https://conectica-it.ro" target="_blank" class="text-warning text-decoration-none">conectica-it.ro</a></p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <a href="#" class="text-white-50 text-decoration-none me-3">Termeni si conditii</a>

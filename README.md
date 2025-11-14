@@ -177,6 +177,8 @@ Acest proiect este licențiat sub [MIT License](LICENSE)
 
 ---
 
-Dezvoltat cu ❤️ și ☕ în București
+**Created by [conectica-it.ro](https://conectica-it.ro)**
+
+Dezvolvat cu ❤️ și ☕ în București
 
 ⭐ Dacă îți place proiectul, dă-ne un star pe GitHub!
