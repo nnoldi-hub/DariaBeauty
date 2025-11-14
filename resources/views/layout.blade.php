@@ -259,6 +259,11 @@
                         <li class="nav-item ms-3">
                             <a class="nav-link" href="{{ route('login') }}">Autentificare</a>
                         </li>
+                        <li class="nav-item ms-2">
+                            <a class="nav-link text-primary" href="{{ route('register') }}">
+                                <i class="fas fa-user-plus me-1"></i>Inregistrare
+                            </a>
+                        </li>
                     @endauth
                 </ul>
             </div>
