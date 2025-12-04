@@ -15,6 +15,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SocialController;
+use App\Http\Controllers\Client\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -78,6 +79,7 @@ Route::prefix('specialisti')->name('specialists.')->group(function () {
     Route::get('/', [SpecialistController::class, 'index'])->name('index');
     Route::get('/{slug}', [SpecialistController::class, 'show'])->name('show');
     Route::get('/{slug}/rezervare', [SpecialistController::class, 'booking'])->name('booking');
+    Route::post('/{slug}/rezervare', [SpecialistController::class, 'storeBooking'])->name('booking.store');
 });
 
 // Reviews publice
@@ -110,6 +112,20 @@ Route::middleware(['auth'])->group(function () {
     // API pentru disponibilitate
     Route::get('/api/disponibilitate/{specialist}', [AppointmentController::class, 'availability'])->name('api.availability');
     
+});
+
+// Rute pentru clienți (necesită autentificare)
+Route::middleware(['auth'])->prefix('client')->name('client.')->group(function () {
+    // Profil client
+    Route::get('/profil', [ProfileController::class, 'show'])->name('profile');
+    Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/parola', [ProfileController::class, 'updatePassword'])->name('password.update');
+    
+    // Programări client
+    Route::get('/programari', [AppointmentController::class, 'clientAppointments'])->name('appointments');
+    
+    // Review-uri client
+    Route::get('/recenzii', [ReviewController::class, 'clientReviews'])->name('reviews');
 });
 
 // Rute pentru specialisti (necesita auth si rol de specialist)

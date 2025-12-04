@@ -146,6 +146,9 @@ class SpecialistController extends Controller
                             ->latest()
                             ->paginate(10);
 
+        // Servicii active
+        $services = $specialist->services()->active()->get();
+
         // Statistici specialist
         $stats = [
             'completed_appointments' => $specialist->appointments()->completed()->count(),
@@ -154,7 +157,7 @@ class SpecialistController extends Controller
             'response_time' => '< 2 ore' // Simulat
         ];
 
-        return view('specialists.show', compact('specialist', 'servicesByCategory', 'gallery', 'reviews', 'stats'));
+        return view('specialists.show', compact('specialist', 'servicesByCategory', 'gallery', 'reviews', 'stats', 'services'));
     }
 
     /**
@@ -179,6 +182,67 @@ class SpecialistController extends Controller
         $coverageAreas = $specialist->coverage_area ?? [];
 
         return view('specialists.booking', compact('specialist', 'services', 'selectedService', 'coverageAreas'));
+    }
+
+    /**
+     * Proceseaza rezervarea
+     */
+    public function storeBooking($slug, Request $request)
+    {
+        $specialist = User::where('role', 'specialist')
+                         ->where('is_active', true)
+                         ->where('slug', $slug)
+                         ->firstOrFail();
+
+        $request->validate([
+            'service_id' => 'required|exists:services,id',
+            'service_location' => 'required|in:salon,home',
+            'client_name' => 'required|string|max:255',
+            'client_email' => 'required|email|max:255',
+            'client_phone' => 'required|string|max:20',
+            'date' => 'required|date|after:today',
+            'time' => 'required',
+            'address' => 'required_if:service_location,home|nullable|string|max:500',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $service = Service::findOrFail($request->service_id);
+        
+        $isHomeService = $request->service_location === 'home';
+        
+        // Calculează totalul cu taxe
+        $totalAmount = $service->price;
+        if ($isHomeService) {
+            // Adaugă taxa de serviciu la domiciliu (dacă există)
+            if ($service->home_service_fee > 0) {
+                $totalAmount += $service->home_service_fee;
+            }
+            // Adaugă taxa de transport a specialistului
+            if ($specialist->transport_fee > 0) {
+                $totalAmount += $specialist->transport_fee;
+            }
+        }
+
+        // Creaza programarea
+        $appointment = Appointment::create([
+            'specialist_id' => $specialist->id,
+            'service_id' => $service->id,
+            'client_name' => $request->client_name,
+            'client_email' => $request->client_email,
+            'client_phone' => $request->client_phone,
+            'appointment_date' => $request->date,
+            'appointment_time' => $request->time,
+            'client_address' => $isHomeService ? $request->address : $specialist->salon_address,
+            'notes' => $request->notes,
+            'is_home_service' => $isHomeService,
+            'total_amount' => $totalAmount,
+            'status' => 'pending',
+            'payment_status' => 'pending'
+        ]);
+
+        $locationText = $isHomeService ? 'la domiciliu' : 'la salon';
+        return redirect()->route('specialists.show', $specialist->slug)
+                        ->with('success', "Programarea {$locationText} a fost trimisă cu succes! Vei primi confirmare pe email/telefon în curând.");
     }
 
     /**
@@ -318,7 +382,7 @@ class SpecialistController extends Controller
 
         $service->update($data);
 
-        return redirect()->route('specialist.services')->with('success', 'Serviciul a fost actualizat cu succes!');
+        return redirect()->route('specialist.services.index')->with('success', 'Serviciul a fost actualizat cu succes!');
     }
 
     /**
@@ -520,20 +584,32 @@ class SpecialistController extends Controller
     {
         $specialist = Auth::user();
 
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $specialist->id,
             'phone' => 'nullable|string|max:20',
             'description' => 'nullable|string',
             'sub_brand' => 'required|in:dariaNails,dariaHair,dariaGlow',
-            'transport_fee' => 'required|numeric|min:0',
-            'max_distance' => 'required|integer|min:5|max:100',
-            'coverage_area' => 'required|array|min:1',
+            'offers_at_salon' => 'nullable|boolean',
+            'offers_at_home' => 'nullable|boolean',
+            'salon_address' => 'nullable|string|max:255',
+            'transport_fee' => 'nullable|numeric|min:0',
+            'max_distance' => 'nullable|integer|min:5|max:100',
+            'coverage_area' => 'nullable|array',
             'mobile_equipment' => 'nullable|array',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
+        // Validare: cel puțin una dintre opțiuni trebuie selectată
+        if (!$request->has('offers_at_salon') && !$request->has('offers_at_home')) {
+            return redirect()->back()->withErrors(['offers_at_salon' => 'Trebuie să selectezi cel puțin o opțiune: servicii la salon sau la domiciliu!'])->withInput();
+        }
+
         $data = $request->except(['profile_image']);
+        
+        // Setează boolean-urile corect
+        $data['offers_at_salon'] = $request->has('offers_at_salon');
+        $data['offers_at_home'] = $request->has('offers_at_home');
 
         if ($request->hasFile('profile_image')) {
             // Sterge imaginea veche

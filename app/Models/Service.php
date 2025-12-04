@@ -38,7 +38,10 @@ class Service extends Model
         'preparation_time', // timp de pregatire
         'is_active',
         'image',
-        'category'
+        'category',
+        'available_at_salon',
+        'available_at_home',
+        'home_service_fee'
     ];
 
     protected $casts = [
@@ -47,7 +50,10 @@ class Service extends Model
         'preparation_time' => 'integer',
         'is_mobile' => 'boolean',
         'is_active' => 'boolean',
-        'equipment_needed' => 'array'
+        'equipment_needed' => 'array',
+        'available_at_salon' => 'boolean',
+        'available_at_home' => 'boolean',
+        'home_service_fee' => 'decimal:2'
     ];
 
     // Relatii

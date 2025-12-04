@@ -130,8 +130,8 @@
                         
                         <!-- Image Section - Compact -->
                         <div class="position-relative" style="height: 200px; overflow: hidden;">
-                            @if($specialist->profile_picture)
-                            <img src="{{ asset('storage/' . $specialist->profile_picture) }}" 
+                            @if($specialist->profile_image)
+                            <img src="{{ asset('storage/' . $specialist->profile_image) }}"
                                  alt="{{ $specialist->name }}" 
                                  class="w-100 h-100 object-fit-cover" style="transition: transform 0.3s ease;">
                             @else
@@ -211,7 +211,7 @@
 
                             <!-- Actions - Compact -->
                             <div class="d-flex gap-2">
-                                <a href="{{ route('specialist.profile', $specialist->slug ?? $specialist->id) }}" 
+                                <a href="{{ route('specialists.show', $specialist->slug) }}" 
                                    class="btn btn-sm btn-outline-primary flex-fill" style="font-size: 0.85rem;">
                                     Profil
                                 </a>
@@ -236,8 +236,8 @@
                         <!-- Image -->
                         <div class="col-auto">
                             <div class="position-relative" style="width: 80px; height: 80px; border-radius: 12px; overflow: hidden;">
-                                @if($specialist->profile_picture)
-                                <img src="{{ asset('storage/' . $specialist->profile_picture) }}" 
+                                @if($specialist->profile_image)
+                                <img src="{{ asset('storage/' . $specialist->profile_image) }}" 
                                      alt="{{ $specialist->name }}" 
                                      class="w-100 h-100 object-fit-cover">
                                 @else
@@ -299,7 +299,7 @@
 
                                 <!-- Actions -->
                                 <div class="d-flex gap-2">
-                                    <a href="{{ route('specialist.profile', $specialist->slug ?? $specialist->id) }}" 
+                                    <a href="{{ route('specialists.show', $specialist->slug) }}" 
                                        class="btn btn-sm btn-outline-primary">
                                         Vezi Profil
                                     </a>

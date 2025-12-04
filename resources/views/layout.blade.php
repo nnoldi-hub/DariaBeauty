@@ -244,16 +244,80 @@
                         </a>
                     </li>
                     @auth
-                        @if(in_array(auth()->user()->role, ['admin','superadmin']))
-                        <li class="nav-item ms-3">
-                            <a class="nav-link" href="{{ route('admin.dashboard') }}">Admin</a>
-                        </li>
-                        @endif
-                        <li class="nav-item ms-3">
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="nav-link btn btn-link p-0">Delogare</button>
-                            </form>
+                        <!-- User Dropdown Menu -->
+                        <li class="nav-item dropdown ms-3">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-2" 
+                                     style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                <span class="d-none d-md-inline">{{ auth()->user()->name }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li class="px-3 py-2">
+                                    <small class="text-muted">Bine ai venit,</small><br>
+                                    <strong>{{ auth()->user()->name }}</strong>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                
+                                @if(auth()->user()->role === 'client')
+                                    <!-- Meniu Client -->
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('client.profile') }}">
+                                            <i class="fas fa-user-circle me-2"></i>Profilul Meu
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('client.appointments') }}">
+                                            <i class="fas fa-calendar-check me-2"></i>Programările Mele
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('client.reviews') }}">
+                                            <i class="fas fa-star me-2"></i>Review-urile Mele
+                                        </a>
+                                    </li>
+                                @elseif(auth()->user()->role === 'specialist')
+                                    <!-- Meniu Specialist -->
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('specialist.dashboard') }}">
+                                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('specialist.profile') }}">
+                                            <i class="fas fa-user-edit me-2"></i>Profilul Meu
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('specialist.services.index') }}">
+                                            <i class="fas fa-briefcase me-2"></i>Serviciile Mele
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('specialist.appointments.index') }}">
+                                            <i class="fas fa-calendar me-2"></i>Programări
+                                        </a>
+                                    </li>
+                                @elseif(in_array(auth()->user()->role, ['admin','superadmin']))
+                                    <!-- Meniu Admin -->
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
+                                            <i class="fas fa-tools me-2"></i>Admin Dashboard
+                                        </a>
+                                    </li>
+                                @endif
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{{ route('logout') }}" class="px-0">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Deconectare
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
                         </li>
                     @else
                         <li class="nav-item ms-3">
@@ -300,8 +364,8 @@
                     <h6 class="text-warning mb-3">Servicii</h6>
                     <ul class="list-unstyled">
                         <li><a href="{{ route('services') }}" class="text-white-50 text-decoration-none">Servicii la domiciliu</a></li>
-                        <li><a href="{{ route('services') }}" class="text-white-50 text-decoration-none">Consultanta frumusete</a></li>
-                        <li><a href="{{ route('services') }}" class="text-white-50 text-decoration-none">Evenimente speciale</a></li>
+                        <li><a href="{{ route('contact') }}" class="text-white-50 text-decoration-none">Consultanta frumusete</a></li>
+                        <li><a href="{{ route('booking.landing') }}" class="text-white-50 text-decoration-none">Evenimente speciale</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-3">

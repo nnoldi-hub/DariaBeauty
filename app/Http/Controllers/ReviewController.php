@@ -36,18 +36,18 @@ class ReviewController extends Controller
     public function create(Appointment $appointment)
     {
         // Verifica daca userul poate da review pentru aceasta programare
-        if (Auth::id() !== $appointment->user_id) {
-            abort(403);
+        if (auth()->user()->email !== $appointment->client_email) {
+            abort(403, 'Nu poți da review pentru o programare care nu îți aparține.');
         }
 
         // Verifica daca programarea este completata
         if ($appointment->status !== 'completed') {
-            return redirect()->back()->with('error', 'Poti da review doar pentru programarile completate.');
+            return redirect()->back()->with('error', 'Poți da review doar pentru programările completate.');
         }
 
         // Verifica daca nu exista deja un review
         if ($appointment->review) {
-            return redirect()->back()->with('error', 'Ai dat deja un review pentru aceasta programare.');
+            return redirect()->back()->with('error', 'Ai dat deja un review pentru această programare.');
         }
 
         return view('reviews.create', compact('appointment'));
@@ -59,58 +59,45 @@ class ReviewController extends Controller
     public function store(Request $request, Appointment $appointment)
     {
         // Verificari de securitate
-        if (Auth::id() !== $appointment->user_id) {
-            abort(403);
+        if (auth()->user()->email !== $appointment->client_email) {
+            abort(403, 'Nu poți da review pentru o programare care nu îți aparține.');
         }
 
         if ($appointment->status !== 'completed') {
-            return redirect()->back()->with('error', 'Poti da review doar pentru programarile completate.');
+            return redirect()->back()->with('error', 'Poți da review doar pentru programările completate.');
         }
 
         if ($appointment->review) {
-            return redirect()->back()->with('error', 'Ai dat deja un review pentru aceasta programare.');
+            return redirect()->back()->with('error', 'Ai dat deja un review pentru această programare.');
         }
 
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
-            'service_quality' => 'required|integer|min:1|max:5',
-            'punctuality' => 'required|integer|min:1|max:5',
-            'cleanliness' => 'required|integer|min:1|max:5',
-            'communication' => 'required|integer|min:1|max:5',
-            'value_for_money' => 'required|integer|min:1|max:5',
-            'comment' => 'required|string|min:10|max:1000',
-            'would_recommend' => 'required|boolean',
-            'photos.*' => 'nullable|image|mimes:jpeg,png,jpg|max:5120'
+            'service_quality_rating' => 'nullable|integer|min:1|max:5',
+            'punctuality_rating' => 'nullable|integer|min:1|max:5',
+            'cleanliness_rating' => 'nullable|integer|min:1|max:5',
+            'overall_experience' => 'nullable|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000',
         ]);
 
-        $photos = [];
-        if ($request->hasFile('photos')) {
-            foreach ($request->file('photos') as $photo) {
-                $path = $photo->store('reviews', 'public');
-                $photos[] = $path;
-            }
-        }
-
         $review = new Review([
-            'user_id' => Auth::id(),
-            'specialist_id' => $appointment->specialist_id,
             'appointment_id' => $appointment->id,
+            'specialist_id' => $appointment->specialist_id,
+            'client_name' => auth()->user()->name,
             'rating' => $request->rating,
-            'service_quality' => $request->service_quality,
-            'punctuality' => $request->punctuality,
-            'cleanliness' => $request->cleanliness,
-            'communication' => $request->communication,
-            'value_for_money' => $request->value_for_money,
+            'service_quality_rating' => $request->service_quality_rating ?? $request->rating,
+            'punctuality_rating' => $request->punctuality_rating ?? $request->rating,
+            'cleanliness_rating' => $request->cleanliness_rating ?? $request->rating,
+            'overall_experience' => $request->overall_experience ?? $request->rating,
             'comment' => $request->comment,
-            'would_recommend' => $request->would_recommend,
-            'photos' => $photos,
-            'is_approved' => false // Require manual approval
+            'photos' => null,
+            'is_approved' => true
         ]);
 
         $review->save();
 
-        return redirect()->route('appointments.show', $appointment)
-                        ->with('success', 'Multumim pentru review! Va fi afisat dupa aprobare.');
+        return redirect()->route('specialists.show', $appointment->specialist->slug)
+                        ->with('success', 'Mulțumim pentru review! Review-ul tău a fost salvat cu succes.');
     }
 
     /**
@@ -334,5 +321,22 @@ class ReviewController extends Controller
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"'
         ]);
+    }
+    
+    /**
+     * Afișează review-urile clientului autentificat
+     */
+    public function clientReviews()
+    {
+        $user = auth()->user();
+        
+        $reviews = Review::whereHas('appointment', function($query) use ($user) {
+                $query->where('client_email', $user->email);
+            })
+            ->with(['appointment.specialist', 'appointment.service'])
+            ->latest()
+            ->paginate(10);
+        
+        return view('client.reviews', compact('reviews'));
     }
 }

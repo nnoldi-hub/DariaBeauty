@@ -102,15 +102,71 @@
                             </div>
                         </div>
 
-                        <!-- Service Settings -->
+                        <!-- Service Location Options -->
                         <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Unde Oferi Servicii?</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i> Alege unde vrei să oferi serviciile tale: la salon, la domiciliu sau ambele.
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="offers_at_salon" 
+                                                   name="offers_at_salon" value="1"
+                                                   {{ old('offers_at_salon', $specialist->offers_at_salon) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="offers_at_salon">
+                                                <strong><i class="fas fa-building"></i> Ofer servicii la salon/cabinet</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="offers_at_home" 
+                                                   name="offers_at_home" value="1"
+                                                   {{ old('offers_at_home', $specialist->offers_at_home) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="offers_at_home">
+                                                <strong><i class="fas fa-home"></i> Ofer servicii la domiciliu</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Salon Address (shown only if offers_at_salon is checked) -->
+                                <div id="salon_address_section" style="display: {{ old('offers_at_salon', $specialist->offers_at_salon) ? 'block' : 'none' }};">
+                                    <div class="border-top pt-3">
+                                        <h6 class="mb-3"><i class="fas fa-map-marked-alt"></i> Adresa Salonului/Cabinetului</h6>
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3">
+                                                <label for="salon_address" class="form-label">Adresă Completă</label>
+                                                <input type="text" class="form-control @error('salon_address') is-invalid @enderror" 
+                                                       id="salon_address" name="salon_address" 
+                                                       value="{{ old('salon_address', $specialist->salon_address) }}"
+                                                       placeholder="Str. Exemplu nr. 10, Sector 1, București">
+                                                @error('salon_address')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                                <small class="text-muted">Adresa unde clienții pot veni pentru servicii</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service Settings (for home services) -->
+                        <div class="card mb-4" id="home_service_settings" style="display: {{ old('offers_at_home', $specialist->offers_at_home) ? 'block' : 'none' }};">
                             <div class="card-header">
-                                <h5 class="mb-0">Setări Servicii</h5>
+                                <h5 class="mb-0"><i class="fas fa-car"></i> Setări Servicii la Domiciliu</h5>
                             </div>
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label for="transport_fee" class="form-label">Tarif Transport (RON) <span class="text-danger">*</span></label>
+                                        <label for="transport_fee" class="form-label">Tarif Transport (RON)</label>
                                         <input type="number" step="0.01" class="form-control @error('transport_fee') is-invalid @enderror" 
                                                id="transport_fee" name="transport_fee" 
                                                value="{{ old('transport_fee', $specialist->transport_fee ?? 30) }}" required>
@@ -270,4 +326,40 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const offersAtSalon = document.getElementById('offers_at_salon');
+    const offersAtHome = document.getElementById('offers_at_home');
+    const salonAddressSection = document.getElementById('salon_address_section');
+    const homeServiceSettings = document.getElementById('home_service_settings');
+
+    // Toggle salon address section
+    if (offersAtSalon) {
+        offersAtSalon.addEventListener('change', function() {
+            salonAddressSection.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+
+    // Toggle home service settings
+    if (offersAtHome) {
+        offersAtHome.addEventListener('change', function() {
+            homeServiceSettings.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+
+    // Validation: At least one option must be selected
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!offersAtSalon.checked && !offersAtHome.checked) {
+                e.preventDefault();
+                alert('Trebuie să selectezi cel puțin o opțiune: servicii la salon sau la domiciliu!');
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection

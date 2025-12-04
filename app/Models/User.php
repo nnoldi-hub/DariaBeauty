@@ -52,7 +52,12 @@ class User extends Authenticatable
         'address',
         'instagram',
         'facebook',
-        'tiktok'
+        'tiktok',
+        'offers_at_salon',
+        'offers_at_home',
+        'salon_address',
+        'salon_lat',
+        'salon_lng'
     ];
 
     protected $hidden = [
@@ -67,7 +72,11 @@ class User extends Authenticatable
         'mobile_equipment' => 'array',
         'is_active' => 'boolean',
         'transport_fee' => 'decimal:2',
-        'max_distance' => 'integer'
+        'max_distance' => 'integer',
+        'offers_at_salon' => 'boolean',
+        'offers_at_home' => 'boolean',
+        'salon_lat' => 'decimal:8',
+        'salon_lng' => 'decimal:8'
     ];
 
     // Relatii

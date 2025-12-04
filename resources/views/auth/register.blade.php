@@ -16,6 +16,21 @@
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
+        <!-- Role Selection -->
+        <div class="mt-4">
+            <x-input-label for="role" :value="__('Te înregistrezi ca...')" />
+            <select id="role" name="role" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                <option value="">-- Selectează rolul --</option>
+                <option value="client" {{ old('role') == 'client' ? 'selected' : '' }}>Client (programez servicii)</option>
+                <option value="specialist" {{ old('role') == 'specialist' ? 'selected' : '' }}>Specialist (ofer servicii)</option>
+            </select>
+            <x-input-error :messages="$errors->get('role')" class="mt-2" />
+            <p class="mt-1 text-sm text-gray-600">
+                <strong>Client:</strong> Poți căuta specialiști și programa servicii<br>
+                <strong>Specialist:</strong> Poți oferi servicii și primi programări
+            </p>
+        </div>
+
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />

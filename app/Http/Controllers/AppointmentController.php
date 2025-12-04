@@ -352,4 +352,29 @@ class AppointmentController extends Controller
         // Pentru demo, doar logam
         \Log::info("Notification sent to client {$appointment->user_id}: {$type}");
     }
+    
+    /**
+     * Afișează programările clientului autentificat
+     */
+    public function clientAppointments()
+    {
+        $user = auth()->user();
+        
+        $appointments = Appointment::where('client_email', $user->email)
+            ->with(['specialist', 'service'])
+            ->orderBy('appointment_date', 'desc')
+            ->orderBy('appointment_time', 'desc')
+            ->paginate(10);
+        
+        // Statistici
+        $stats = [
+            'total' => Appointment::where('client_email', $user->email)->count(),
+            'pending' => Appointment::where('client_email', $user->email)->where('status', 'pending')->count(),
+            'confirmed' => Appointment::where('client_email', $user->email)->where('status', 'confirmed')->count(),
+            'completed' => Appointment::where('client_email', $user->email)->where('status', 'completed')->count(),
+            'cancelled' => Appointment::where('client_email', $user->email)->where('status', 'cancelled')->count(),
+        ];
+        
+        return view('client.appointments', compact('appointments', 'stats'));
+    }
 }
