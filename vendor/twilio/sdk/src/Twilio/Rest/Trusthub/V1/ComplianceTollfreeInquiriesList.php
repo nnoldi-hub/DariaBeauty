@@ -62,6 +62,8 @@ class ComplianceTollfreeInquiriesList extends ListResource
                 $tollfreePhoneNumber,
             'NotificationEmail' =>
                 $notificationEmail,
+            'CustomerProfileSid' =>
+                $options['customerProfileSid'],
             'BusinessName' =>
                 $options['businessName'],
             'BusinessWebsite' =>
@@ -100,9 +102,14 @@ class ComplianceTollfreeInquiriesList extends ListResource
                 $options['businessContactEmail'],
             'BusinessContactPhone' =>
                 $options['businessContactPhone'],
+            'ThemeSetId' =>
+                $options['themeSetId'],
+            'SkipMessagingUseCase' =>
+                Serialize::booleanToString($options['skipMessagingUseCase']),
         ]);
 
-        $payload = $this->version->create('POST', $this->uri, [], $data);
+        $headers = Values::of(['Content-Type' => 'application/x-www-form-urlencoded', 'Accept' => 'application/json' ]);
+        $payload = $this->version->create('POST', $this->uri, [], $data, $headers);
 
         return new ComplianceTollfreeInquiriesInstance(
             $this->version,

@@ -238,6 +238,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/setari', [AdminController::class, 'settings'])->name('settings');
     Route::put('/setari', [AdminController::class, 'updateSettings'])->name('settings.update');
     
+    // SMS Management
+    Route::prefix('sms')->name('sms.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SmsController::class, 'index'])->name('index');
+        Route::post('/config', [\App\Http\Controllers\Admin\SmsController::class, 'updateConfig'])->name('update-config');
+        Route::post('/test', [\App\Http\Controllers\Admin\SmsController::class, 'sendTest'])->name('send-test');
+        Route::post('/reminders', [\App\Http\Controllers\Admin\SmsController::class, 'sendReminders'])->name('send-reminders');
+        Route::get('/{smsLog}', [\App\Http\Controllers\Admin\SmsController::class, 'show'])->name('show');
+    });
+    
 });
 
 // Rute pentru API (daca este necesar) - TO BE IMPLEMENTED

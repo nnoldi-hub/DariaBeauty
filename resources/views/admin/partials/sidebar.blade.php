@@ -32,6 +32,12 @@
     <a href="{{ route('admin.reports') }}" class="list-group-item list-group-item-action {{ request()->routeIs('admin.reports') ? 'active' : '' }}">
         <i class="fas fa-chart-line me-2"></i>Rapoarte
     </a>
+    <a href="{{ route('admin.sms.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('admin.sms.*') ? 'active' : '' }}">
+        <i class="fas fa-sms me-2"></i>Integrări API
+        @if(config('twilio.enabled'))
+            <span class="badge bg-success float-end">Activ</span>
+        @endif
+    </a>
     <a href="{{ route('admin.settings') }}" class="list-group-item list-group-item-action {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
         <i class="fas fa-cog me-2"></i>Setări
     </a>

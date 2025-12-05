@@ -286,7 +286,12 @@
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="{{ route('specialist.profile') }}">
-                                            <i class="fas fa-user-edit me-2"></i>Profilul Meu
+                                            <i class="fas fa-user-edit me-2"></i>Editează Profil
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('specialists.show', auth()->user()->slug) }}">
+                                            <i class="fas fa-eye me-2"></i>Vezi Profil Public
                                         </a>
                                     </li>
                                     <li>

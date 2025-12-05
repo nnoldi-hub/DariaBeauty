@@ -317,25 +317,50 @@ class HomeController extends BaseController
      */
     public function specialistRegisterStore(Request $request)
     {
-        $data = $request->validate([
+        // Validare de bază
+        $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8|confirmed',
             'sub_brand' => 'required|in:dariaNails,dariaHair,dariaGlow',
-            'coverage_area' => 'required|array|min:1',
-            'transport_fee' => 'required|numeric|min:0',
-            'max_distance' => 'required|integer|min:5|max:100',
-        ]);
+            'offers_at_salon' => 'nullable|boolean',
+            'offers_at_home' => 'nullable|boolean',
+        ];
+
+        // Validări condiționale
+        if ($request->has('offers_at_salon') && $request->offers_at_salon) {
+            $rules['salon_address'] = 'required|string|max:500';
+            $rules['salon_lat'] = 'nullable|numeric|between:-90,90';
+            $rules['salon_lng'] = 'nullable|numeric|between:-180,180';
+        }
+
+        if ($request->has('offers_at_home') && $request->offers_at_home) {
+            $rules['coverage_area'] = 'required|array|min:1';
+            $rules['transport_fee'] = 'required|numeric|min:0';
+            $rules['max_distance'] = 'required|integer|min:5|max:100';
+        }
+
+        $data = $request->validate($rules);
+
+        // Asigură că cel puțin o opțiune este bifată
+        if (empty($data['offers_at_salon']) && empty($data['offers_at_home'])) {
+            return back()->withErrors(['offers_at_home' => 'Trebuie să oferi servicii cel puțin la salon SAU la domiciliu!'])
+                        ->withInput();
+        }
+
+        // Convertește checkboxurile în boolean
+        $data['offers_at_salon'] = !empty($request->offers_at_salon);
+        $data['offers_at_home'] = !empty($request->offers_at_home);
 
         $data['role'] = 'specialist';
-        $data['is_active'] = false; // asteapta aprobare admin
+        $data['is_active'] = false; // așteaptă aprobare admin
 
         // Laravel 10 va aplica hashing automat prin cast-ul "password => hashed"
         $user = User::create($data);
 
-        // TODO: Notifica un admin despre cererea noua (mail/notification)
+        // TODO: Notifica un admin despre cererea nouă (mail/notification)
 
-        return redirect()->route('home')->with('success', 'Cererea ta a fost inregistrata. Vei primi un email dupa aprobare.');
+        return redirect()->route('home')->with('success', 'Cererea ta a fost înregistrată. Vei primi un email după aprobare.');
     }
 }
