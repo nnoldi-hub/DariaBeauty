@@ -30,22 +30,22 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Nume Platformă</label>
-                                <input type="text" class="form-control" name="platform_name" value="DariaBeauty" required>
+                                <input type="text" class="form-control" name="platform_name" value="{{ $settings['platform_name'] ?? 'DariaBeauty' }}" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Email Contact</label>
-                                <input type="email" class="form-control" name="contact_email" value="contact@dariabeauty.ro" required>
+                                <input type="email" class="form-control" name="contact_email" value="{{ $settings['contact_email'] ?? 'contact@dariabeauty.ro' }}" required>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Telefon Contact</label>
-                                <input type="text" class="form-control" name="contact_phone" value="+40 XXX XXX XXX">
+                                <input type="text" class="form-control" name="contact_phone" value="{{ $settings['contact_phone'] ?? '+40 XXX XXX XXX' }}" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Comision Platformă (%)</label>
-                                <input type="number" class="form-control" name="platform_commission" value="15" min="0" max="100">
+                                <input type="number" class="form-control" name="platform_commission" value="{{ $settings['platform_commission'] ?? 15 }}" min="0" max="100" required>
                             </div>
                         </div>
 
@@ -54,30 +54,30 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Oră Început</label>
-                                <input type="time" class="form-control" name="default_start_time" value="09:00">
+                                <input type="time" class="form-control" name="default_start_time" value="{{ $settings['default_start_time'] ?? '09:00' }}" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Oră Sfârșit</label>
-                                <input type="time" class="form-control" name="default_end_time" value="18:00">
+                                <input type="time" class="form-control" name="default_end_time" value="{{ $settings['default_end_time'] ?? '18:00' }}" required>
                             </div>
                         </div>
 
                         <hr class="my-4">
                         <h6>Notificări Email</h6>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="notify_new_specialist" id="notify1" checked>
+                            <input class="form-check-input" type="checkbox" name="notify_new_specialist" id="notify1" {{ ($settings['notify_new_specialist'] ?? '1') == '1' ? 'checked' : '' }}>
                             <label class="form-check-label" for="notify1">
                                 Specialist nou înregistrat
                             </label>
                         </div>
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" name="notify_new_booking" id="notify2" checked>
+                            <input class="form-check-input" type="checkbox" name="notify_new_booking" id="notify2" {{ ($settings['notify_new_booking'] ?? '1') == '1' ? 'checked' : '' }}>
                             <label class="form-check-label" for="notify2">
                                 Programare nouă
                             </label>
                         </div>
                         <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" name="notify_negative_review" id="notify3" checked>
+                            <input class="form-check-input" type="checkbox" name="notify_negative_review" id="notify3" {{ ($settings['notify_negative_review'] ?? '1') == '1' ? 'checked' : '' }}>
                             <label class="form-check-label" for="notify3">
                                 Review negativ (sub 3 stele)
                             </label>

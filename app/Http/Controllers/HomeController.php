@@ -171,7 +171,8 @@ class HomeController extends BaseController
      */
     public function contact()
     {
-        return view('contact');
+        $settings = \App\Models\Setting::getAll();
+        return view('contact', compact('settings'));
     }
 
     /**

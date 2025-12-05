@@ -86,7 +86,7 @@
               </div>
               <div>
                 <h6 class="fw-bold mb-1">Telefon</h6>
-                <p class="text-muted mb-0">+40 XXX XXX XXX</p>
+                <p class="text-muted mb-0">{{ $settings['contact_phone'] ?? '+40 XXX XXX XXX' }}</p>
               </div>
             </div>
 
@@ -97,7 +97,7 @@
               </div>
               <div>
                 <h6 class="fw-bold mb-1">Email</h6>
-                <p class="text-muted mb-0">contact@dariabeauty.ro</p>
+                <p class="text-muted mb-0">{{ $settings['contact_email'] ?? 'contact@dariabeauty.ro' }}</p>
               </div>
             </div>
 
@@ -108,7 +108,7 @@
               </div>
               <div>
                 <h6 class="fw-bold mb-1">Program</h6>
-                <p class="text-muted mb-0">Luni - Duminică<br>09:00 - 21:00</p>
+                <p class="text-muted mb-0">Luni - Duminică<br>{{ $settings['default_start_time'] ?? '09:00' }} - {{ $settings['default_end_time'] ?? '18:00' }}</p>
               </div>
             </div>
 
