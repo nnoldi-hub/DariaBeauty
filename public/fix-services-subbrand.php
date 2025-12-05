@@ -1,4 +1,3 @@
-#!/usr/bin/env php
 <?php
 /**
  * Script pentru a face sub_brand nullable în tabela services
@@ -8,8 +7,8 @@
 define('LARAVEL_START', microtime(true));
 
 // Bootstrap Laravel
-require __DIR__.'/vendor/autoload.php';
-$app = require_once __DIR__.'/bootstrap/app.php';
+require __DIR__.'/../vendor/autoload.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
