@@ -63,7 +63,7 @@
                             @endif
                             @if($specialist->offers_at_home)
                                 <span class="badge bg-warning text-dark">
-                                    <i class="fas fa-home"></i> Servicii la domiciliu
+                                    <i class="fas fa-home"></i> Servicii la domiciliu disponibile
                                 </span>
                             @endif
                         </div>

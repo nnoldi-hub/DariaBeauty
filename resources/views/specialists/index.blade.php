@@ -9,7 +9,7 @@
         <div class="container">
             <div class="text-center mb-5">
                 <h1 class="display-4 fw-bold text-white mb-3">Găsește Specialistul Perfect</h1>
-                <p class="lead text-white opacity-75 mb-5">Servicii profesionale de frumusețe la domiciliul tău</p>
+                <p class="lead text-white opacity-75 mb-5">Servicii profesionale de frumusețe la salon sau la domiciliu</p>
             </div>
 
             <!-- Compact Search Bar -->

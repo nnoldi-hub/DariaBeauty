@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'DariaBeauty - Frumusetea ta, in maini bune')</title>
-    <meta name="description" content="@yield('description', 'DariaBeauty - servicii de frumusete premium la domiciliu. dariaNails, dariaHair, dariaGlow. Programeaza acum!')">
+    <meta name="description" content="@yield('description', 'DariaBeauty - servicii de frumusete premium la salon sau la domiciliu. dariaNails, dariaHair, dariaGlow. Programeaza acum!')">
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
@@ -355,7 +355,7 @@
                 <div class="col-lg-4 mb-4">
                     <h5 class="text-warning mb-3">DariaBeauty</h5>
                     <p class="mb-3"><em>"Frumusetea ta, in maini bune."</em></p>
-                    <p>Servicii premium de frumusete la domiciliu, adaptate stilului tau de viata.</p>
+                    <p>Servicii premium de frumusete la salon sau la domiciliu, adaptate stilului tau de viata.</p>
                     <div class="social-links mt-3">
                         <a href="#" class="text-white me-3"><i class="fab fa-instagram fa-lg"></i></a>
                         <a href="#" class="text-white me-3"><i class="fab fa-facebook fa-lg"></i></a>
@@ -373,7 +373,7 @@
                 <div class="col-lg-3 mb-4">
                     <h6 class="text-warning mb-3">Servicii</h6>
                     <ul class="list-unstyled">
-                        <li><a href="{{ route('services') }}" class="text-white-50 text-decoration-none">Servicii la domiciliu</a></li>
+                        <li><a href="{{ route('services') }}" class="text-white-50 text-decoration-none">Serviciile noastre</a></li>
                         <li><a href="{{ route('contact') }}" class="text-white-50 text-decoration-none">Consultanta frumusete</a></li>
                         <li><a href="{{ route('booking.landing') }}" class="text-white-50 text-decoration-none">Evenimente speciale</a></li>
                     </ul>

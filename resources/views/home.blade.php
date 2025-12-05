@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('title', 'DariaBeauty - Frumusetea ta, in maini bune')
-@section('description', 'DariaBeauty ofera servicii premium de frumusete la domiciliu: dariaNails (manichiura), dariaHair (coafura), dariaGlow (skincare). Programeaza acum!')
+@section('description', 'DariaBeauty ofera servicii premium de frumusete la salon sau la domiciliu: dariaNails (manichiura), dariaHair (coafura), dariaGlow (skincare). Programeaza acum!')
 
 @section('content')
 <!-- Hero Section - Modern Compact -->
@@ -16,7 +16,7 @@
                     "Frumusețea ta, în mâini bune."
                 </p>
                 <p class="lead mb-4 text-white">
-                    Servicii premium de frumusețe la domiciliu, adaptate stilului tău de viață.
+                    Servicii premium de frumusețe la salon sau la domiciliu, oriunde dorești.
                 </p>
                 
                 <!-- Advanced Search Form -->
@@ -134,7 +134,7 @@
                     <img src="/images/hero-beauty.jpg" alt="DariaBeauty Services" 
                          class="img-fluid rounded-4 shadow-lg" style="max-height: 450px; object-fit: cover; width: 100%;">
                     <div class="position-absolute top-0 end-0 bg-white px-4 py-2 rounded-bottom-start shadow-sm">
-                        <strong style="color: #D4AF37;"><i class="fas fa-home me-2"></i>La domiciliu</strong>
+                        <strong style="color: #D4AF37;"><i class="fas fa-store me-2"></i>La salon <span class="mx-1">sau</span> <i class="fas fa-home me-2"></i>La domiciliu</strong>
                     </div>
                 </div>
             </div>
