@@ -21,5 +21,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+        
+        // Share settings with all views
+        view()->composer('*', function ($view) {
+            $settings = \App\Models\Setting::getAll();
+            $view->with('settings', $settings);
+        });
     }
 }

@@ -380,9 +380,9 @@
                 </div>
                 <div class="col-lg-3">
                     <h6 class="text-warning mb-3">Contact</h6>
-                    <p class="text-white-50"><i class="fas fa-envelope me-2"></i>contact@dariabeauty.ro</p>
-                    <p class="text-white-50"><i class="fas fa-phone me-2"></i>+40 123 456 789</p>
-                    <p class="text-white-50"><i class="fas fa-map-marker-alt me-2"></i>Bucuresti & imprejurimi</p>
+                    <p class="text-white-50"><i class="fas fa-envelope me-2"></i>{{ $settings['contact_email'] ?? 'contact@dariabeauty.ro' }}</p>
+                    <p class="text-white-50"><i class="fas fa-phone me-2"></i>{{ $settings['contact_phone'] ?? '+40 XXX XXX XXX' }}</p>
+                    <p class="text-white-50"><i class="fas fa-map-marker-alt me-2"></i>{{ $settings['coverage_area'] ?? 'Bucuresti & imprejurimi' }}</p>
                 </div>
             </div>
             <hr class="my-4 border-secondary">
