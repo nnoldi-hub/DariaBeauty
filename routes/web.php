@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Route;
 
 // Rute publice - Homepage
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/specialists/search', [HomeController::class, 'advancedSearch'])->name('specialists.search');
 // Dashboard post-autentificare (redirijeaza in functie de rol)
 Route::get('/dashboard', function () {
     $user = auth()->user();

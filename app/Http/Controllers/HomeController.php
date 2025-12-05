@@ -364,4 +364,92 @@ class HomeController extends BaseController
 
         return redirect()->route('home')->with('success', 'Cererea ta a fost înregistrată. Vei primi un email după aprobare.');
     }
+
+    /**
+     * Advanced search pentru specialiști cu filtrare multiplă
+     */
+    public function advancedSearch(Request $request)
+    {
+        $request->validate([
+            'services' => 'nullable|array',
+            'services.*' => 'string',
+            'location' => 'nullable|string',
+            'service_location' => 'nullable|in:salon,home',
+        ]);
+
+        $requestedServices = $request->input('services', []);
+        $location = $request->input('location');
+        $serviceLocation = $request->input('service_location');
+
+        // Start query pentru specialiști activi
+        $query = User::where('role', 'specialist')
+                    ->where('is_active', true)
+                    ->with(['services', 'reviews', 'gallery'])
+                    ->withCount('reviews')
+                    ->withAvg('reviews', 'rating');
+
+        // Filtrare după tipul de locație (salon/home)
+        if ($serviceLocation === 'salon') {
+            $query->where('offers_at_salon', true)
+                  ->whereNotNull('salon_address');
+        } elseif ($serviceLocation === 'home') {
+            $query->where('offers_at_home', true);
+        }
+
+        // Filtrare după locație geografică
+        if ($location) {
+            $query->where(function($q) use ($location) {
+                $q->whereJsonContains('coverage_area', $location)
+                  ->orWhere('salon_address', 'LIKE', "%{$location}%");
+            });
+        }
+
+        // Filtrare după servicii - cel puțin un serviciu din lista cerută
+        if (!empty($requestedServices)) {
+            $query->whereHas('services', function($q) use ($requestedServices) {
+                $serviceQuery = $q->where(function($sq) use ($requestedServices) {
+                    foreach ($requestedServices as $serviceName) {
+                        $sq->orWhere('name', 'LIKE', "%{$serviceName}%")
+                           ->orWhere('description', 'LIKE', "%{$serviceName}%");
+                    }
+                });
+            });
+        }
+
+        $specialists = $query->paginate(12);
+
+        // Calculează scorul de potrivire pentru fiecare specialist
+        if (!empty($requestedServices)) {
+            $specialists->getCollection()->transform(function ($specialist) use ($requestedServices) {
+                $matchedServices = 0;
+                $specialist->matched_services = [];
+                
+                foreach ($requestedServices as $requestedService) {
+                    $hasService = $specialist->services->first(function($service) use ($requestedService) {
+                        return stripos($service->name, $requestedService) !== false || 
+                               stripos($service->description, $requestedService) !== false;
+                    });
+                    
+                    if ($hasService) {
+                        $matchedServices++;
+                        $specialist->matched_services[] = $requestedService;
+                    }
+                }
+                
+                $specialist->match_score = $matchedServices;
+                $specialist->match_percentage = count($requestedServices) > 0 
+                    ? round(($matchedServices / count($requestedServices)) * 100) 
+                    : 0;
+                
+                return $specialist;
+            });
+
+            // Sortează după scorul de potrivire
+            $specialists->setCollection(
+                $specialists->getCollection()->sortByDesc('match_score')
+            );
+        }
+
+        return view('specialists.search-results', compact('specialists', 'requestedServices', 'location', 'serviceLocation'));
+    }
 }

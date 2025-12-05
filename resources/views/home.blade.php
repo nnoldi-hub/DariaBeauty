@@ -19,18 +19,102 @@
                     Servicii premium de frumusețe la domiciliu, adaptate stilului tău de viață.
                 </p>
                 
-                <!-- Compact Search Bar -->
-                <div class="bg-white rounded-pill shadow-lg p-2 mb-4">
-                    <form action="/search-specialists" method="GET" class="row g-2 align-items-center">
-                        <div class="col-md-8">
-                            <input type="text" class="form-control border-0 rounded-pill" name="location" 
-                                   placeholder="🔍 Caută specialiști în zona ta..." required>
-                        </div>
-                        <div class="col-md-4">
-                            <button type="submit" class="btn w-100 rounded-pill text-white" 
-                                    style="background: linear-gradient(135deg, #D4AF37 0%, #FFD700 100%); border: none; font-weight: 600;">
-                                Caută
-                            </button>
+                <!-- Advanced Search Form -->
+                <div class="card shadow-lg border-0 rounded-4 p-4 mb-4 bg-white">
+                    <form action="{{ route('specialists.search') }}" method="GET">
+                        <div class="row g-3">
+                            <!-- Servicii -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-spa text-primary"></i> Selectează serviciile dorite:
+                                </label>
+                                <div class="row g-2">
+                                    <div class="col-md-4 col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="services[]" value="manichiura" id="srv_manichiura">
+                                            <label class="form-check-label" for="srv_manichiura">
+                                                💅 Manichiură
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="services[]" value="pedichiura" id="srv_pedichiura">
+                                            <label class="form-check-label" for="srv_pedichiura">
+                                                🦶 Pedichiură
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="services[]" value="coafura" id="srv_coafura">
+                                            <label class="form-check-label" for="srv_coafura">
+                                                💇 Coafură
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="services[]" value="machiaj" id="srv_machiaj">
+                                            <label class="form-check-label" for="srv_machiaj">
+                                                💄 Machiaj
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="services[]" value="skincare" id="srv_skincare">
+                                            <label class="form-check-label" for="srv_skincare">
+                                                ✨ Skincare
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="services[]" value="masaj" id="srv_masaj">
+                                            <label class="form-check-label" for="srv_masaj">
+                                                💆 Masaj
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Locatie -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-map-marker-alt text-danger"></i> Locație:
+                                </label>
+                                <select name="location" class="form-select">
+                                    <option value="">Oriunde în București</option>
+                                    <option value="Sector 1">Sector 1</option>
+                                    <option value="Sector 2">Sector 2</option>
+                                    <option value="Sector 3">Sector 3</option>
+                                    <option value="Sector 4">Sector 4</option>
+                                    <option value="Sector 5">Sector 5</option>
+                                    <option value="Sector 6">Sector 6</option>
+                                </select>
+                            </div>
+
+                            <!-- Tip serviciu -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-location-dot text-success"></i> Unde preferi?
+                                </label>
+                                <select name="service_location" class="form-select">
+                                    <option value="">Oriunde</option>
+                                    <option value="salon">La salon</option>
+                                    <option value="home">La domiciliu</option>
+                                </select>
+                            </div>
+
+                            <!-- Buton cautare -->
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-lg w-100 text-white" 
+                                        style="background: linear-gradient(135deg, #D4AF37 0%, #FFD700 100%); border: none; font-weight: 600;">
+                                    <i class="fas fa-search me-2"></i> Caută Specialiști
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
