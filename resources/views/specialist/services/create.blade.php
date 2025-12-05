@@ -117,3 +117,18 @@
     </div>
 </div>
 @endsection
+
+@section('scripts')
+<script>
+// Previne duplicate la submit
+document.querySelector('form').addEventListener('submit', function(e) {
+    const submitBtn = this.querySelector('button[type="submit"]');
+    if (submitBtn.disabled) {
+        e.preventDefault();
+        return false;
+    }
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Se salvează...';
+});
+</script>
+@endsection

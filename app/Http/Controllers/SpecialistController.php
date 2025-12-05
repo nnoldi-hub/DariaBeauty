@@ -404,7 +404,7 @@ class SpecialistController extends Controller
 
         $service->delete();
 
-        return redirect()->route('specialist.services')->with('success', 'Serviciul a fost sters cu succes!');
+        return redirect()->route('specialist.services.index')->with('success', 'Serviciul a fost sters cu succes!');
     }
 
     /**
