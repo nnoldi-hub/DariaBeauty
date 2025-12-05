@@ -312,7 +312,7 @@ class SpecialistController extends Controller
 
         Service::create($data);
 
-        return redirect()->route('specialist.services')->with('success', 'Serviciul a fost adaugat cu succes!');
+        return redirect()->route('specialist.services.index')->with('success', 'Serviciul a fost adaugat cu succes!');
     }
 
     /**
