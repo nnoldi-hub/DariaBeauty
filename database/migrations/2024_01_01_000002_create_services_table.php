@@ -15,7 +15,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('price', 8, 2);
             $table->integer('duration'); // in minute
-            $table->enum('sub_brand', ['dariaNails', 'dariaHair', 'dariaGlow']);
+            $table->enum('sub_brand', ['dariaNails', 'dariaHair', 'dariaGlow'])->nullable();
             $table->boolean('is_mobile')->default(true); // se poate face la domiciliu
             $table->json('equipment_needed')->nullable(); // echipamente necesare
             $table->integer('preparation_time')->default(0); // minute pregatire

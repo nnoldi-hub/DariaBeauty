@@ -303,7 +303,7 @@ class SpecialistController extends Controller
 
         $data = $request->all();
         $data['user_id'] = $specialist->id;
-        $data['sub_brand'] = $specialist->sub_brand;
+        $data['sub_brand'] = $specialist->sub_brand ?? 'dariaNails'; // Default la dariaNails dacă nu e setat
         $data['is_mobile'] = true; // Toate serviciile DariaBeauty sunt mobile
 
         if ($request->hasFile('image')) {
