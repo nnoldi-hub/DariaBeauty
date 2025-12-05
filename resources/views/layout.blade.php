@@ -6,6 +6,11 @@
     <title>@yield('title', 'DariaBeauty - Frumusetea ta, in maini bune')</title>
     <meta name="description" content="@yield('description', 'DariaBeauty - servicii de frumusete premium la domiciliu. dariaNails, dariaHair, dariaGlow. Programeaza acum!')">
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+    
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
