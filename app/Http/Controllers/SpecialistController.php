@@ -392,8 +392,21 @@ class SpecialistController extends Controller
     {
         $specialist = Auth::user();
 
+        // DEBUG: Log pentru troubleshooting
+        \Log::info('DELETE Service Debug', [
+            'service_id' => $service->id,
+            'service_user_id' => $service->user_id,
+            'auth_user_id' => $specialist->id,
+            'auth_user_email' => $specialist->email,
+            'match' => ($service->user_id === $specialist->id)
+        ]);
+
         // Verifica ca serviciul apartine specialistului
         if ($service->user_id !== $specialist->id) {
+            \Log::error('DELETE Service FAILED - Ownership mismatch', [
+                'service_user_id' => $service->user_id,
+                'auth_user_id' => $specialist->id
+            ]);
             abort(403, 'Unauthorized');
         }
 

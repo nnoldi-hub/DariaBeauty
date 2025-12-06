@@ -1,4 +1,4 @@
-<?php
+ <?php
 /**
  * Script pentru resetarea bazei de date
  * Șterge toate datele și ruleaza migrațiile din nou
@@ -69,8 +69,8 @@ if ($step === 'warning') {
     echo "<h2>🔐 Confirmare Reset</h2>";
     echo "<form method='GET'>";
     echo "<input type='hidden' name='step' value='confirm'>";
-    echo "<p><strong>Pentru a continua, introdu emailul super admin-ului care va fi păstrat:</strong></p>";
-    echo "<input type='email' name='admin_email' placeholder='admin@dariabeauty.ro' required style='width:100%;padding:10px;margin:10px 0;font-size:16px;'>";
+    echo "<p><strong>Pentru a continua, introdu emailul superadmin-ului care va fi păstrat:</strong></p>";
+    echo "<input type='email' name='admin_email' placeholder='superadmin@dariabeauty.ro' required style='width:100%;padding:10px;margin:10px 0;font-size:16px;'>";
     echo "<p><label><input type='checkbox' name='confirm_delete' value='yes' required> Confirm că vreau să șterg TOATE datele</label></p>";
     echo "<p><label><input type='checkbox' name='confirm_images' value='yes' required> Confirm că vreau să șterg și imaginile din storage</label></p>";
     echo "<button type='submit' class='btn btn-danger'>🗑️ DA, Resetează Baza de Date</button> ";
@@ -86,18 +86,18 @@ if ($step === 'warning') {
     echo "<h2>⚙️ Se procesează resetarea...</h2>";
     
     try {
-        // Verifică că admin-ul există
-        $admin = DB::table('users')->where('email', $adminEmail)->where('role', 'admin')->first();
+        // Verifică că superadmin-ul există
+        $admin = DB::table('users')->where('email', $adminEmail)->where('role', 'superadmin')->first();
         
         if (!$admin) {
             echo "<div class='error'>";
-            echo "<p>❌ <strong>EROARE:</strong> Nu există admin cu email-ul '{$adminEmail}'!</p>";
-            echo "<p>Verifică că email-ul este corect și că user-ul are role='admin'.</p>";
+            echo "<p>❌ <strong>EROARE:</strong> Nu există superadmin cu email-ul '{$adminEmail}'!</p>";
+            echo "<p>Verifică că email-ul este corect și că user-ul are role='superadmin'.</p>";
             echo "<a href='?step=warning' class='btn btn-secondary'>Înapoi</a>";
             echo "</div>";
         } else {
             echo "<div class='success'>";
-            echo "<p>✅ Admin găsit: <strong>{$admin->name}</strong> (#{$admin->id})</p>";
+            echo "<p>✅ Superadmin găsit: <strong>{$admin->name}</strong> (#{$admin->id})</p>";
             echo "</div>";
             
             echo "<h3>🗑️ Ștergere Date:</h3>";
@@ -165,7 +165,7 @@ if ($step === 'warning') {
             echo "<p><strong>Baza de date a fost curățată cu succes!</strong></p>";
             echo "<p>Rămâne doar:</p>";
             echo "<ul>";
-            echo "<li>Admin: <strong>{$admin->name}</strong> ({$admin->email})</li>";
+            echo "<li>Superadmin: <strong>{$admin->name}</strong> ({$admin->email})</li>";
             echo "</ul>";
             echo "</div>";
             
