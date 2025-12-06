@@ -8,7 +8,7 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 $app = require_once __DIR__ . '/../bootstrap/app.php';
-$kernel = $app->make('Illuminate\Contracts\Console\Kernel');
+$kernel = $app->make('Illuminate\Contracts\Http\Kernel');
 $kernel->bootstrap();
 
 echo "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Debug Delete</title>";
@@ -19,20 +19,79 @@ echo "th{background:#333;color:white;}.error{color:red;}.success{color:green;}</
 
 echo "<h1>🔍 Debug Delete Service</h1>";
 
-// 1. Verifică user-ul autentificat
-echo "<h2>1. User Autentificat</h2>";
-if (Auth::check()) {
-    $user = Auth::user();
-    echo "<p class='success'>✅ User autentificat:</p>";
+// 1. Verifică sesiunea și user-ul
+echo "<h2>1. User Session Check</h2>";
+
+// Start sesiunea Laravel
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Verifică cookie-urile Laravel
+$laravelSession = $_COOKIE['laravel_session'] ?? null;
+$xsrfToken = $_COOKIE['XSRF-TOKEN'] ?? null;
+
+echo "<table>";
+echo "<tr><th>Cookie</th><th>Valoare</th><th>Status</th></tr>";
+echo "<tr><td>laravel_session</td><td>" . ($laravelSession ? substr($laravelSession, 0, 30) . "..." : "N/A") . "</td><td class='" . ($laravelSession ? "success" : "error") . "'>" . ($laravelSession ? "✅" : "❌") . "</td></tr>";
+echo "<tr><td>XSRF-TOKEN</td><td>" . ($xsrfToken ? substr($xsrfToken, 0, 30) . "..." : "N/A") . "</td><td class='" . ($xsrfToken ? "success" : "error") . "'>" . ($xsrfToken ? "✅" : "❌") . "</td></tr>";
+echo "</table>";
+
+// Încearcă să găsească user-ul din sesiune
+$userId = null;
+$user = null;
+
+// Metodă 1: Auth facade
+try {
+    if (Auth::check()) {
+        $user = Auth::user();
+        $userId = $user->id;
+        echo "<p class='success'>✅ User găsit via Auth facade!</p>";
+    }
+} catch (Exception $e) {
+    echo "<p class='error'>⚠️ Auth facade failed: {$e->getMessage()}</p>";
+}
+
+// Metodă 2: Direct din sesiune
+if (!$user && $laravelSession) {
+    try {
+        $sessionData = base64_decode($laravelSession);
+        echo "<p>Încerc să citesc sesiunea manual...</p>";
+    } catch (Exception $e) {
+        echo "<p class='error'>Nu pot citi sesiunea: {$e->getMessage()}</p>";
+    }
+}
+
+// Metodă 3: Request input manual pentru test
+if (!$user) {
+    echo "<p class='error'>❌ Nu te pot identifica din sesiune!</p>";
+    echo "<p>🔧 <strong>Soluție temporară:</strong> Spune-mi email-ul tău și continui debug-ul:</p>";
+    echo "<form method='GET'>";
+    echo "Email: <input type='email' name='test_email' value='" . ($_GET['test_email'] ?? 'daria@gmail.com') . "' required>";
+    echo " <button type='submit'>Debug cu acest user</button>";
+    echo "</form>";
+    
+    if (isset($_GET['test_email'])) {
+        $user = DB::table('users')->where('email', $_GET['test_email'])->first();
+        if ($user) {
+            echo "<p class='success'>✅ User găsit manual: {$user->name} (#{$user->id})</p>";
+            $userId = $user->id;
+        } else {
+            echo "<p class='error'>❌ User cu email '{$_GET['test_email']}' nu există!</p>";
+            echo "</body></html>";
+            exit;
+        }
+    } else {
+        echo "</body></html>";
+        exit;
+    }
+}
+
+if ($user) {
     echo "<table>";
     echo "<tr><th>ID</th><th>Email</th><th>Nume</th><th>Role</th></tr>";
     echo "<tr><td>{$user->id}</td><td>{$user->email}</td><td>{$user->name}</td><td>{$user->role}</td></tr>";
     echo "</table>";
-} else {
-    echo "<p class='error'>❌ Niciun user autentificat! Loghează-te mai întâi!</p>";
-    echo "<p><a href='/login'>Login</a></p>";
-    echo "</body></html>";
-    exit;
 }
 
 // 2. Verifică serviciile user-ului
