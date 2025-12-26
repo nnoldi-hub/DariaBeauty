@@ -149,6 +149,22 @@ Platforma oferă 3 sub-branduri specializate:
 - ✅ Adresă client
 - ✅ Note speciale
 - ✅ Vizualizare în panel specialist și admin
+- ✅ **Validare overlap** - Previne programări suprapuse ⭐ NOU
+- ✅ **Durată serviciu** salvată în programare ⭐ NOU
+
+### 5.1 🕐 Program de Lucru Specialist ⭐ NOU (26 Dec 2025)
+
+- ✅ Model `SpecialistSchedule` pentru programul săptămânal
+- ✅ Setare ore diferite pentru fiecare zi
+- ✅ Diferențiere ore salon vs. domiciliu
+- ✅ Pauze de masă configurabile (ore start/end)
+- ✅ Interval între programări (30/45/60 min)
+- ✅ Notificare minimă înainte de programare (ore)
+- ✅ Zile maxime în avans pentru rezervare
+- ✅ **API disponibilități**: `/api/specialist/{id}/available-slots`
+- ✅ **API zile disponibile**: `/api/specialist/{id}/available-days`
+- ✅ **Calendar vizual** în booking cu zile disponibile highlighted
+- ✅ Interfață specialist pentru gestionare program (Dashboard → Program de Lucru)
 
 ### 6. ⭐ Review-uri
 
@@ -178,12 +194,19 @@ Platforma oferă 3 sub-branduri specializate:
 ### 9. 🗄️ Bază de Date
 
 #### Tabele Implementate:
-- ✅ `users` - utilizatori (admin/specialist/client)
+- ✅ `users` - utilizatori (admin/specialist/client/salon)
 - ✅ `services` - servicii oferite
-- ✅ `appointments` - programări
+- ✅ `appointments` - programări (cu `duration` ⭐)
 - ✅ `reviews` - review-uri și rating-uri
 - ✅ `gallery` - imagini galerie
 - ✅ `social_links` - link-uri social media
+- ✅ `specialist_schedules` - program lucru specialist ⭐ NOU
+- ✅ `salon_invitations` - invitații specialiști în saloane
+
+#### Coloane Noi în `users` ⭐ NOU:
+- ✅ `slot_interval` - interval între programări (30/45/60 min)
+- ✅ `min_booking_notice` - ore minim înainte de programare
+- ✅ `max_booking_days` - zile maxim în avans pentru rezervare
 
 #### Features:
 - ✅ Relații complexe (One-to-Many, Many-to-One)
@@ -556,25 +579,29 @@ dariabeauty/
 
 ## 📈 Stadiu Proiect
 
-### Implementat: ~60%
+### Implementat: ~85% ⬆️
 - ✅ Core functionality (users, services, appointments, reviews)
 - ✅ Admin panel complet
 - ✅ Specialist panel complet
 - ✅ Design modern pe toate paginile publice
 - ✅ Sistem autentificare și autorizare
 - ✅ Bază de date structurată
+- ✅ **Sistem booking cu calendar vizual** ⭐ NOU
+- ✅ **Program de lucru specialist** ⭐ NOU
+- ✅ **Validare overlap programări** ⭐ NOU
+- ✅ **Notificări SMS Twilio** ⭐
+- ✅ **WhatsApp Business API** ⭐
+- ✅ **Dashboard Salon Owner complet** ⭐
+- ✅ **Rapoarte și statistici** ⭐
 
-### În Dezvoltare: 0%
-- (Features noi care pot fi adăugate în viitor)
+### În Dezvoltare: 5%
+- 🔄 Optimizări UX booking flow
 
-### De Implementat: ~40%
-- Sistem booking complet cu calendar
-- Plăți online
-- Notificări email/SMS
-- Analytics și rapoarte
-- Mobile app
-- Chat în timp real
-- SEO și marketing tools
+### De Implementat: ~10%
+- ⏳ Plăți online (Stripe)
+- ⏳ Mobile app (PWA)
+- ⏳ Chat în timp real
+- ⏳ SEO și marketing tools avansate
 
 ---
 
@@ -591,6 +618,6 @@ Pentru orice întrebări sau suport, contactează dezvoltatorul! 💪
 
 ---
 
-**Versiune document**: 1.0  
-**Data**: 14 Noiembrie 2025  
+**Versiune document**: 2.0  
+**Ultima actualizare**: 26 Decembrie 2025  
 **Dezvoltat cu**: ❤️ și ☕
