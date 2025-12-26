@@ -338,7 +338,7 @@
         <div class="container text-center">
             <h2 class="display-5 fw-bold mb-3">Ești specialist în frumusețe?</h2>
             <p class="lead mb-4">Alătură-te echipei DariaBeauty și ajunge la mai mulți clienți</p>
-            <a href="/inregistrare-specialist" class="btn btn-light btn-lg px-5" 
+            <a href="{{ route('specialist.register') }}" class="btn btn-light btn-lg px-5" 
                style="color: #D4AF37; font-weight: 600;">
                 Devino Specialist DariaBeauty
             </a>

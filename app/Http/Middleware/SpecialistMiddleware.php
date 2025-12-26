@@ -13,6 +13,15 @@ class SpecialistMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        // IMMEDIATE logging to diagnose 403
+        \Log::info('=== SpecialistMiddleware ENTRY ===', [
+            'timestamp' => now()->toDateTimeString(),
+            'url' => $request->fullUrl(),
+            'method' => $request->method(),
+            'route_name' => $request->route() ? $request->route()->getName() : 'NO_ROUTE',
+            'route_params' => $request->route() ? $request->route()->parameters() : [],
+        ]);
+
         $user = Auth::user();
 
         \Log::info('SpecialistMiddleware Check', [

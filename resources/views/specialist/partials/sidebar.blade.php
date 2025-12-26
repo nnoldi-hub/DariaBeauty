@@ -14,8 +14,14 @@
     <a href="{{ route('specialist.services.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('specialist.services.*') ? 'active' : '' }}">
         <i class="fas fa-concierge-bell me-2"></i>Serviciile Mele
     </a>
+    <a href="{{ route('specialist.schedule.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('specialist.schedule.*') ? 'active' : '' }}">
+        <i class="fas fa-calendar-alt me-2"></i>Program de Lucru
+    </a>
     <a href="{{ route('specialist.reviews.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('specialist.reviews.*') ? 'active' : '' }}">
         <i class="fas fa-star me-2"></i>Reviews
+    </a>
+    <a href="{{ route('salon.reports.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('salon.reports.*') ? 'active' : '' }}">
+        <i class="fas fa-chart-line me-2"></i>Rapoarte & Statistici
     </a>
     <a href="{{ route('specialist.gallery.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('specialist.gallery.*') ? 'active' : '' }}">
         <i class="fas fa-images me-2"></i>Galerie

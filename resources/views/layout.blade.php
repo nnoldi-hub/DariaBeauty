@@ -35,6 +35,7 @@
             font-family: 'Inter', sans-serif;
             color: var(--text-dark);
             background-color: var(--background-light);
+            padding-top: 80px; /* Compensează navbar fix */
         }
 
         h1, h2, h3, h4, h5, h6 {
@@ -239,6 +240,11 @@
                         <a class="nav-link" href="{{ route('specialists.index') }}">Specialisti</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ route('salons.index') }}">
+                            <i class="fas fa-store me-1"></i>Saloane
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ route('gallery') }}">Galerie</a>
                     </li>
                     <li class="nav-item">
@@ -310,6 +316,31 @@
                                             <i class="fas fa-calendar me-2"></i>Programări
                                         </a>
                                     </li>
+                                @elseif(auth()->user()->role === 'salon' || auth()->user()->is_salon_owner)
+                                    <!-- Meniu Salon Owner -->
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('salon.dashboard') }}">
+                                            <i class="fas fa-building me-2"></i>Dashboard Salon
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('salon.settings') }}">
+                                            <i class="fas fa-cog me-2"></i>Setări Salon
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('salon.specialists.index') }}">
+                                            <i class="fas fa-users me-2"></i>Specialiștii Mei
+                                            @if(auth()->user()->salon_specialists_count > 0)
+                                                <span class="badge bg-info">{{ auth()->user()->salon_specialists_count }}</span>
+                                            @endif
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('salon.reports.index') }}">
+                                            <i class="fas fa-chart-line me-2"></i>Rapoarte
+                                        </a>
+                                    </li>
                                 @elseif(in_array(auth()->user()->role, ['admin','superadmin']))
                                     <!-- Meniu Admin -->
                                     <li>
@@ -335,7 +366,7 @@
                             <a class="nav-link" href="{{ route('login') }}">Autentificare</a>
                         </li>
                         <li class="nav-item ms-2">
-                            <a class="nav-link text-primary" href="{{ route('register') }}">
+                            <a class="nav-link text-primary" href="{{ route('register.choice') }}">
                                 <i class="fas fa-user-plus me-1"></i>Inregistrare
                             </a>
                         </li>

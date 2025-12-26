@@ -16,6 +16,10 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SocialController;
 use App\Http\Controllers\Client\ProfileController;
+use App\Http\Controllers\SalonReportsController;
+use App\Http\Controllers\SalonSpecialistsController;
+use App\Http\Controllers\SalonDashboardController;
+use App\Http\Controllers\SalonSettingsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,11 +36,17 @@ use Illuminate\Support\Facades\Route;
 // Rute publice - Homepage
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/specialists/search', [HomeController::class, 'advancedSearch'])->name('specialists.search');
+
+// Redirect /register la pagina de alegere
+Route::redirect('/register', '/inregistrare');
 // Dashboard post-autentificare (redirijeaza in functie de rol)
 Route::get('/dashboard', function () {
     $user = auth()->user();
     if ($user && in_array($user->role, ['admin', 'superadmin'])) {
         return redirect()->route('admin.dashboard');
+    }
+    if ($user && ($user->role === 'salon' || $user->is_salon_owner)) {
+        return redirect()->route('salon.dashboard');
     }
     if ($user && $user->role === 'specialist') {
         return redirect()->route('specialist.dashboard');
@@ -45,6 +55,20 @@ Route::get('/dashboard', function () {
 })->middleware(['auth'])->name('dashboard');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::post('/contact', [HomeController::class, 'contactStore'])->name('contact.store');
+// Alegere tip cont înregistrare
+Route::get('/inregistrare', [HomeController::class, 'registerChoice'])->name('register.choice');
+
+// Inregistrare salon (public)
+Route::get('/inregistrare-salon', [HomeController::class, 'salonRegister'])->name('register.salon');
+Route::post('/inregistrare-salon', [HomeController::class, 'salonRegisterStore'])->name('register.salon.store');
+
+// Alegere tip cont înregistrare
+Route::get('/inregistrare', [HomeController::class, 'registerChoice'])->name('register.choice');
+
+// Înregistrare salon (public)
+Route::get('/inregistrare-salon', [HomeController::class, 'salonRegister'])->name('register.salon');
+Route::post('/inregistrare-salon', [HomeController::class, 'salonRegisterStore'])->name('register.salon.store');
+
 // Inregistrare specialist (public)
 Route::get('/inregistrare-specialist', [HomeController::class, 'specialistRegister'])->name('specialist.register');
 Route::post('/inregistrare-specialist', [HomeController::class, 'specialistRegisterStore'])->name('specialist.register.store');
@@ -75,6 +99,12 @@ Route::get('/dariaglow', function() {
 // API endpoints pentru sub-branduri
 Route::get('/api/sub-brand/{brand}', [HomeController::class, 'getSubBrandInfo'])->name('api.subbrand');
 
+// Saloane - vizualizare publica
+Route::prefix('saloane')->name('salons.')->group(function () {
+    Route::get('/', [App\Http\Controllers\SalonController::class, 'index'])->name('index');
+    Route::get('/{id}', [App\Http\Controllers\SalonController::class, 'show'])->name('show');
+});
+
 // Specialisti - vizualizare publica
 Route::prefix('specialisti')->name('specialists.')->group(function () {
     Route::get('/', [SpecialistController::class, 'index'])->name('index');
@@ -82,6 +112,16 @@ Route::prefix('specialisti')->name('specialists.')->group(function () {
     Route::get('/{slug}/rezervare', [SpecialistController::class, 'booking'])->name('booking');
     Route::post('/{slug}/rezervare', [SpecialistController::class, 'storeBooking'])->name('booking.store');
 });
+
+// API publice pentru disponibilitate specialiști
+Route::prefix('api/specialist')->name('api.specialist.')->group(function () {
+    Route::get('/{id}/available-slots', [App\Http\Controllers\SpecialistScheduleController::class, 'getAvailableSlots'])->name('slots');
+    Route::get('/{id}/available-days', [App\Http\Controllers\SpecialistScheduleController::class, 'getAvailableDays'])->name('days');
+});
+
+// Review prin token (public, fara autentificare)
+Route::get('/review/{token}', [ReviewController::class, 'showByToken'])->name('review.token');
+Route::post('/review/{token}', [ReviewController::class, 'storeByToken'])->name('review.token.store');
 
 // Reviews publice
 Route::prefix('reviews')->name('reviews.')->group(function () {
@@ -97,9 +137,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [AppointmentController::class, 'index'])->name('index');
         Route::get('/creeaza', [AppointmentController::class, 'create'])->name('create');
         Route::post('/', [AppointmentController::class, 'store'])->name('store');
-        Route::get('/{appointment}', [AppointmentController::class, 'show'])->name('show');
-        Route::post('/{appointment}/anuleaza', [AppointmentController::class, 'cancel'])->name('cancel');
-        Route::post('/{appointment}/reprogrameaza', [AppointmentController::class, 'reschedule'])->name('reschedule');
+        Route::get('/detalii/{appointment_id}', [AppointmentController::class, 'show'])->name('show');
+        Route::post('/anuleaza/{appointment_id}', [AppointmentController::class, 'cancel'])->name('cancel');
+        Route::post('/reprogrameaza/{appointment_id}', [AppointmentController::class, 'reschedule'])->name('reschedule');
     });
 
     // Reviews - client
@@ -144,17 +184,17 @@ Route::middleware(['auth', 'specialist'])->prefix('specialist')->name('specialis
         Route::get('/', [SpecialistController::class, 'services'])->name('index');
         Route::get('/adauga', [SpecialistController::class, 'createService'])->name('create');
         Route::post('/', [SpecialistController::class, 'storeService'])->name('store');
-        Route::get('/{service}/editeaza', [SpecialistController::class, 'editService'])->name('edit');
-        Route::put('/{service}', [SpecialistController::class, 'updateService'])->name('update');
-        Route::delete('/{service}', [SpecialistController::class, 'destroyService'])->name('destroy');
+        Route::get('/editeaza/{service_id}', [SpecialistController::class, 'editService'])->name('edit');
+        Route::put('/actualizeaza/{service_id}', [SpecialistController::class, 'updateService'])->name('update');
+        Route::delete('/sterge/{service_id}', [SpecialistController::class, 'destroyService'])->name('destroy');
     });
     
     // Galerie
     Route::prefix('galerie')->name('gallery.')->group(function () {
         Route::get('/', [SpecialistController::class, 'gallery'])->name('index');
         Route::post('/upload', [SpecialistController::class, 'storeGalleryImage'])->name('store');
-        Route::put('/{image}', [SpecialistController::class, 'updateGalleryImage'])->name('update');
-        Route::delete('/{image}', [SpecialistController::class, 'destroyGalleryImage'])->name('destroy');
+        Route::put('/actualizeaza/{gallery_id}', [SpecialistController::class, 'updateGalleryImage'])->name('update');
+        Route::delete('/sterge/{gallery_id}', [SpecialistController::class, 'destroyGalleryImage'])->name('destroy');
     });
     
     // Linkuri sociale
@@ -164,8 +204,10 @@ Route::middleware(['auth', 'specialist'])->prefix('specialist')->name('specialis
     // Programari - specialist
     Route::prefix('programari')->name('appointments.')->group(function () {
         Route::get('/', [SpecialistController::class, 'appointments'])->name('index');
-        Route::post('/{appointment}/confirma', [AppointmentController::class, 'confirm'])->name('confirm');
-        Route::post('/{appointment}/finalizeaza', [AppointmentController::class, 'complete'])->name('complete');
+        Route::post('/confirma/{appointment_id}', [AppointmentController::class, 'confirm'])->name('confirm');
+        Route::post('/finalizeaza/{appointment_id}', [AppointmentController::class, 'complete'])->name('complete');
+        Route::post('/trimite-review-whatsapp/{appointment_id}', [AppointmentController::class, 'sendReviewWhatsApp'])->name('send-review-whatsapp');
+        Route::post('/genereaza-link-review/{appointment_id}', [AppointmentController::class, 'generateReviewLink'])->name('generate-review-link');
     });
     
     // Reviews - specialist
@@ -176,6 +218,41 @@ Route::middleware(['auth', 'specialist'])->prefix('specialist')->name('specialis
         Route::post('/{review}/raspunde', [ReviewController::class, 'respond'])->name('respond');
         Route::get('/export', [ReviewController::class, 'exportReviews'])->name('export');
     });
+    
+    // Program de lucru - specialist
+    Route::prefix('program')->name('schedule.')->group(function () {
+        Route::get('/', [App\Http\Controllers\SpecialistScheduleController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\SpecialistScheduleController::class, 'store'])->name('store');
+    });
+    
+});
+
+// Rute pentru salon (proprietar salon cu specialisti)
+// Acces: rol 'salon' SAU specialist cu is_salon_owner = true SAU specialist individual (pentru propriile rapoarte)
+Route::middleware(['auth'])->prefix('salon')->name('salon.')->group(function () {
+    
+    // Dashboard Salon
+    Route::get('/dashboard', [SalonDashboardController::class, 'index'])->name('dashboard');
+    
+    // Rapoarte & Statistici
+    Route::prefix('rapoarte')->name('reports.')->group(function () {
+        Route::get('/', [SalonReportsController::class, 'index'])->name('index');
+        Route::get('/export-csv', [SalonReportsController::class, 'exportCSV'])->name('export-csv');
+        Route::get('/specialist/{id}', [SalonReportsController::class, 'specialistDetail'])->name('specialist-detail');
+    });
+    
+    // Gestionare Specialiști (doar pentru salon owners)
+    Route::prefix('specialisti')->name('specialists.')->group(function () {
+        Route::get('/', [SalonSpecialistsController::class, 'index'])->name('index');
+        Route::get('/cautare', [SalonSpecialistsController::class, 'search'])->name('search');
+        Route::post('/asociaza', [SalonSpecialistsController::class, 'associate'])->name('associate');
+        Route::delete('/{id}/elimina', [SalonSpecialistsController::class, 'remove'])->name('remove');
+    });
+    
+    // Setări Salon
+    Route::get('/setari', [SalonSettingsController::class, 'index'])->name('settings');
+    Route::put('/setari', [SalonSettingsController::class, 'update'])->name('settings.update');
+    Route::put('/setari/parola', [SalonSettingsController::class, 'updatePassword'])->name('settings.password');
     
 });
 

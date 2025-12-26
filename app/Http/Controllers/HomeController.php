@@ -295,6 +295,76 @@ class HomeController extends BaseController
     }
 
     /**
+     * Pagina de alegere tip cont
+     */
+    public function registerChoice()
+    {
+        return view('auth.register-choice');
+    }
+
+    /**
+     * Formular inregistrare salon (public)
+     */
+    public function salonRegister()
+    {
+        return view('auth.register-salon');
+    }
+
+    /**
+     * Procesare inregistrare salon
+     */
+    public function salonRegisterStore(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:500',
+            'salon_description' => 'nullable|string|max:2000',
+            'salon_logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'sub_brands' => 'required|array|min:1',
+            'sub_brands.*' => 'in:dariaNails,dariaHair,dariaGlow',
+            'instagram' => 'nullable|string|max:100',
+            'facebook' => 'nullable|string|max:100',
+            'tiktok' => 'nullable|string|max:100',
+            'terms' => 'required|accepted',
+        ]);
+
+        // Upload logo dacă există
+        if ($request->hasFile('salon_logo')) {
+            $logoPath = $request->file('salon_logo')->store('salon-logos', 'public');
+            $data['salon_logo'] = $logoPath;
+        }
+
+        // Setări pentru salon
+        $data['role'] = 'salon';
+        $data['is_salon_owner'] = true;
+        $data['is_active'] = false; // așteaptă aprobare admin
+        $data['salon_specialists_count'] = 0;
+        
+        // Mapează adresa la salon_address pentru consistență
+        $data['salon_address'] = $data['address'];
+        
+        // Salvează descrierea în description
+        if (isset($data['salon_description'])) {
+            $data['description'] = $data['salon_description'];
+        }
+        
+        // Convertește array-ul de sub_brands la JSON pentru stocare
+        // Setăm și sub_brand la prima valoare pentru compatibilitate
+        if (isset($data['sub_brands']) && is_array($data['sub_brands'])) {
+            $data['sub_brand'] = json_encode($data['sub_brands']);
+        }
+
+        $user = User::create($data);
+
+        // TODO: Notifica admin despre cererea nouă + email welcome
+
+        return redirect()->route('login')->with('success', 'Cererea ta a fost înregistrată! Vei primi un email după aprobare. În medie durează 24-48h.');
+    }
+
+    /**
      * Formular inregistrare specialist (public)
      */
     public function specialistRegister()
@@ -381,6 +451,29 @@ class HomeController extends BaseController
         $location = $request->input('location');
         $serviceLocation = $request->input('service_location');
 
+        // Query pentru saloane (când se caută "La salon" sau "Oriunde")
+        $salons = collect([]);
+        if ($serviceLocation === 'salon' || empty($serviceLocation)) {
+            $salonQuery = User::where('role', 'salon')
+                        ->where('is_salon_owner', true)
+                        // Comentat temporar pentru testare - permite și saloane inactive
+                        // ->where('is_active', true)
+                        ->with(['reviews'])
+                        ->withCount('reviews')
+                        ->withAvg('reviews', 'rating');
+
+            // Filtrare după locație geografică pentru saloane (doar dacă e specificată și nu e "Oriunde în București")
+            if ($location && !empty($location) && $location !== 'Oriunde în București') {
+                $salonQuery->where(function($q) use ($location) {
+                    $q->where('salon_address', 'LIKE', "%{$location}%")
+                      ->orWhere('address', 'LIKE', "%{$location}%");
+                });
+            }
+            // Dacă nu e specificată locația sau e "Oriunde în București", returnează toate saloanele
+
+            $salons = $salonQuery->get();
+        }
+
         // Start query pentru specialiști activi
         $query = User::where('role', 'specialist')
                     ->where('is_active', true)
@@ -396,13 +489,15 @@ class HomeController extends BaseController
             $query->where('offers_at_home', true);
         }
 
-        // Filtrare după locație geografică
-        if ($location) {
+        // Filtrare după locație geografică (doar dacă e specificată și nu e "Oriunde în București")
+        if ($location && !empty($location) && $location !== 'Oriunde în București') {
             $query->where(function($q) use ($location) {
                 $q->whereJsonContains('coverage_area', $location)
-                  ->orWhere('salon_address', 'LIKE', "%{$location}%");
+                  ->orWhere('salon_address', 'LIKE', "%{$location}%")
+                  ->orWhere('address', 'LIKE', "%{$location}%");
             });
         }
+        // Dacă nu e specificată locația sau e "Oriunde în București", returnează toți specialiștii
 
         // Filtrare după servicii - cel puțin un serviciu din lista cerută
         if (!empty($requestedServices)) {
@@ -450,6 +545,6 @@ class HomeController extends BaseController
             );
         }
 
-        return view('specialists.search-results', compact('specialists', 'requestedServices', 'location', 'serviceLocation'));
+        return view('specialists.search-results', compact('specialists', 'salons', 'requestedServices', 'location', 'serviceLocation'));
     }
 }

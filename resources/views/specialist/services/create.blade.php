@@ -94,6 +94,50 @@
                             </div>
                         </div>
 
+                        <!-- Disponibilitate Locație -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title mb-3">
+                                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                    Unde oferi acest serviciu?
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-2">
+                                            <input type="checkbox" class="form-check-input" id="available_at_salon" 
+                                                   name="available_at_salon" value="1" 
+                                                   {{ old('available_at_salon', true) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="available_at_salon">
+                                                <i class="fas fa-building text-primary me-1"></i>
+                                                <strong>Disponibil la salon</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-2">
+                                            <input type="checkbox" class="form-check-input" id="available_at_home" 
+                                                   name="available_at_home" value="1" 
+                                                   {{ old('available_at_home', true) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="available_at_home">
+                                                <i class="fas fa-home text-warning me-1"></i>
+                                                <strong>Disponibil la domiciliu</strong>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12 mt-2" id="home_fee_section" style="display: {{ old('available_at_home', true) ? 'block' : 'none' }};">
+                                    <label for="home_service_fee" class="form-label">
+                                        <i class="fas fa-plus-circle me-1"></i>
+                                        Taxă suplimentară pentru domiciliu (RON)
+                                    </label>
+                                    <input type="number" step="0.01" class="form-control" 
+                                           id="home_service_fee" name="home_service_fee" 
+                                           value="{{ old('home_service_fee', 0) }}" min="0">
+                                    <small class="text-muted">Lasă 0 dacă nu există taxă suplimentară pentru acest serviciu</small>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="is_active" name="is_active" 
                                    value="1" {{ old('is_active', true) ? 'checked' : '' }}>
@@ -120,6 +164,11 @@
 
 @section('scripts')
 <script>
+// Toggle home service fee visibility
+document.getElementById('available_at_home').addEventListener('change', function() {
+    document.getElementById('home_fee_section').style.display = this.checked ? 'block' : 'none';
+});
+
 // Previne duplicate la submit
 document.querySelector('form').addEventListener('submit', function(e) {
     const submitBtn = this.querySelector('button[type="submit"]');

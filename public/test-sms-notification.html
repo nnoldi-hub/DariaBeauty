@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test SMS Notificare - DariaBeauty</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #c59d5f;
+            text-align: center;
+        }
+        .step {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #c59d5f;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .btn {
+            display: inline-block;
+            background: #c59d5f;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            background: #b08d4f;
+        }
+        .terminal {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test SMS Notificare Specialist</h1>
+        
+        <div class="success">
+            ✅ <strong>Fix aplicat cu succes!</strong><br>
+            Codul a fost actualizat în <code>SpecialistController.php</code> pentru a trimite SMS către specialist când se creează o programare nouă.
+        </div>
+
+        <div class="step">
+            <h3>📋 Ce s-a schimbat:</h3>
+            <ul>
+                <li>✅ Adăugat notificare SMS în metoda <code>storeBooking()</code></li>
+                <li>✅ Încărcare relație <code>service</code> pentru SMS</li>
+                <li>✅ Logging detaliat pentru debugging</li>
+                <li>✅ Gestionare excepții pentru trimitere SMS</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>🧪 Cum testezi:</h3>
+            <ol>
+                <li><strong>Deschide aplicația:</strong>
+                    <br><a href="http://127.0.0.1:8001" class="btn" target="_blank">→ Deschide DariaBeauty Local</a>
+                </li>
+                <li><strong>Navighează la un specialist:</strong>
+                    <br><a href="http://127.0.0.1:8001/specialist/nyikora-daria" class="btn" target="_blank">→ Profil Nyikora Daria</a>
+                </li>
+                <li><strong>Apasă "Programează-te" și completează formularul</strong></li>
+                <li><strong>După trimitere, verifică log-urile:</strong>
+                    <div class="terminal">
+                        cd c:\wamp64\www\Daria-Beauty\dariabeauty<br>
+                        tail -f storage/logs/laravel.log<br>
+                        # SAU pe Windows:<br>
+                        Get-Content storage/logs/laravel.log -Tail 50 -Wait
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>📝 Ce vei vedea în log:</h3>
+            <div class="terminal">
+=== BOOKING CREATED - SENDING SMS TO SPECIALIST ===<br>
+Building SMS for specialist<br>
+Sending SMS to specialist<br>
+>>> SMS SEND METHOD CALLED <<<<br>
+Phone normalized to: +40740173581<br>
+SMS sent successfully to: +40740173581<br>
+SMS to specialist result: SUCCESS
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>🚀 Pentru server LIVE:</h3>
+            <p><strong>Încarcă următoarele fișiere:</strong></p>
+            <ul>
+                <li><code>app/Http/Controllers/SpecialistController.php</code> (IMPORTANT!)</li>
+                <li><code>app/Services/SmsService.php</code></li>
+                <li><code>app/Http/Controllers/AppointmentController.php</code></li>
+            </ul>
+            <p><strong>Actualizează .env pe server:</strong></p>
+            <div class="terminal">
+TWILIO_ENABLED=true<br>
+TWILIO_SID=your_twilio_account_sid<br>
+TWILIO_AUTH_TOKEN=your_twilio_auth_token<br>
+TWILIO_PHONE_NUMBER=+15005550006
+            </div>
+            <p><strong>Clear cache:</strong></p>
+            <div class="terminal">
+php artisan config:clear<br>
+php artisan cache:clear
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>📱 Numărul de telefon specialist (Nyikora Daria):</h3>
+            <p style="font-size: 20px; font-weight: bold; color: #c59d5f;">+40740173581</p>
+            <p>Acest număr va primi SMS când clientul creează o programare.</p>
+        </div>
+
+        <div class="step">
+            <h3>🔍 Debug rapid:</h3>
+            <a href="http://127.0.0.1:8001/debug-sms.php" class="btn" target="_blank">→ Rulează Debug SMS</a>
+        </div>
+    </div>
+
+    <script>
+        console.log('🔧 Test SMS Notificare - DariaBeauty');
+        console.log('✅ Codul a fost actualizat cu succes!');
+        console.log('📝 Verifică log-urile după crearea unei programări');
+    </script>
+</body>
+</html>

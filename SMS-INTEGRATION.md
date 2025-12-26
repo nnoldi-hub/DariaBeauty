@@ -8,7 +8,8 @@ Sistemul de notificări SMS automate folosind Twilio pentru DariaBeauty.
 
 ### 1. **Notificări Automate pentru Clienți**
 - ✅ Confirmare programare (imediat după rezervare)
-- ✅ Reminder 24h înainte de programare
+- ✅ Reminder 24h înainte de programare (automat via cron)
+- ✅ Notificare după finalizare cu link pentru review ⭐ **NOU**
 - ✅ Notificare anulare/modificare programare
 - ✅ Cod de verificare pentru înregistrare (2FA)
 - ✅ Cod resetare parolă
@@ -16,7 +17,7 @@ Sistemul de notificări SMS automate folosind Twilio pentru DariaBeauty.
 ### 2. **Notificări pentru Specialiști**
 - ✅ Programare nouă primită
 - ✅ Anulare de către client
-- ✅ Review nou primit
+- ✅ Review nou primit (cu notă și link) ⭐ **NOU**
 
 ### 3. **Sistem de Management**
 - ✅ Panou admin pentru configurare Twilio

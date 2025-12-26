@@ -96,6 +96,26 @@ class ReviewController extends Controller
 
         $review->save();
 
+        // Trimite notificare SMS către specialist despre review-ul primit
+        try {
+            $smsService = app(\App\Services\SmsService::class);
+            $specialist = $appointment->specialist;
+            
+            if ($smsService->isEnabled() && $specialist) {
+                $result = $smsService->notifySpecialistReview($review, $specialist);
+                \Log::info("Specialist review notification SMS", [
+                    'review_id' => $review->id,
+                    'specialist_id' => $specialist->id,
+                    'result' => $result ? 'SUCCESS' : 'FAILED'
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error("Failed to send review notification SMS", [
+                'review_id' => $review->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+
         return redirect()->route('specialists.show', $appointment->specialist->slug)
                         ->with('success', 'Mulțumim pentru review! Review-ul tău a fost salvat cu succes.');
     }
@@ -338,5 +358,89 @@ class ReviewController extends Controller
             ->paginate(10);
         
         return view('client.reviews', compact('reviews'));
+    }
+
+    /**
+     * Afișează formular review prin token (public, fără autentificare)
+     */
+    public function showByToken($token)
+    {
+        $appointment = Appointment::where('review_token', $token)
+            ->where('status', 'completed')
+            ->with(['specialist', 'service'])
+            ->firstOrFail();
+
+        // Verifică dacă nu există deja un review
+        if ($appointment->review) {
+            return view('reviews.already-submitted', ['appointment' => $appointment]);
+        }
+
+        return view('reviews.create-by-token', [
+            'appointment' => $appointment,
+            'token' => $token
+        ]);
+    }
+
+    /**
+     * Salvează review prin token (public, fără autentificare)
+     */
+    public function storeByToken(Request $request, $token)
+    {
+        $appointment = Appointment::where('review_token', $token)
+            ->where('status', 'completed')
+            ->firstOrFail();
+
+        // Verifică dacă nu există deja un review
+        if ($appointment->review) {
+            return redirect()->route('review.token', $token)
+                ->with('error', 'Ai dat deja un review pentru această programare.');
+        }
+
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'service_quality_rating' => 'nullable|integer|min:1|max:5',
+            'punctuality_rating' => 'nullable|integer|min:1|max:5',
+            'cleanliness_rating' => 'nullable|integer|min:1|max:5',
+            'overall_experience' => 'nullable|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000',
+        ]);
+
+        $review = new Review([
+            'appointment_id' => $appointment->id,
+            'specialist_id' => $appointment->specialist_id,
+            'client_name' => $appointment->client_name,
+            'rating' => $request->rating,
+            'service_quality_rating' => $request->service_quality_rating ?? $request->rating,
+            'punctuality_rating' => $request->punctuality_rating ?? $request->rating,
+            'cleanliness_rating' => $request->cleanliness_rating ?? $request->rating,
+            'overall_experience' => $request->overall_experience ?? $request->rating,
+            'comment' => $request->comment,
+            'photos' => null,
+            'is_approved' => true
+        ]);
+
+        $review->save();
+
+        // Trimite notificare SMS către specialist despre review-ul primit
+        try {
+            $smsService = app(\App\Services\SmsService::class);
+            $specialist = $appointment->specialist;
+            
+            if ($smsService->isEnabled() && $specialist) {
+                $result = $smsService->notifySpecialistReview($review, $specialist);
+                \Log::info("Specialist review notification SMS (via token)", [
+                    'review_id' => $review->id,
+                    'specialist_id' => $specialist->id,
+                    'result' => $result ? 'SUCCESS' : 'FAILED'
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error("Failed to send review notification SMS (via token)", [
+                'review_id' => $review->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return view('reviews.thank-you', compact('appointment', 'review'));
     }
 }

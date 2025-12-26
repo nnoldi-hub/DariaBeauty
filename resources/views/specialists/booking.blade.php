@@ -168,14 +168,28 @@
         @endauth
       </div>
       
-      <div class="col-md-6">
-        <label class="form-label">Data *</label>
-        <input type="date" name="date" class="form-control" value="{{ old('date') }}" min="{{ date('Y-m-d', strtotime('+1 day')) }}" required>
+      <!-- Selector Dată cu Disponibilitate -->
+      <div class="col-md-12">
+        <label class="form-label"><i class="fas fa-calendar-alt text-primary me-2"></i>Alege data *</label>
+        <div id="date-picker-container" class="mb-3">
+          <div class="d-flex align-items-center justify-content-center p-4 bg-light rounded">
+            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+            <span class="text-muted">Se încarcă zilele disponibile...</span>
+          </div>
+        </div>
+        <input type="hidden" name="date" id="selected_date" value="{{ old('date') }}" required>
       </div>
       
-      <div class="col-md-6">
-        <label class="form-label">Ora *</label>
-        <input type="time" name="time" class="form-control" value="{{ old('time') }}" required>
+      <!-- Selector Oră cu Sloturi Disponibile -->
+      <div class="col-md-12">
+        <label class="form-label"><i class="fas fa-clock text-success me-2"></i>Alege ora *</label>
+        <div id="time-slots-container">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Selectează mai întâi serviciul, locația și data pentru a vedea orele disponibile.
+          </div>
+        </div>
+        <input type="hidden" name="time" id="selected_time" value="{{ old('time') }}" required>
       </div>
       
       <div class="col-md-6" id="address_field">
@@ -366,6 +380,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             updateAddressField();
             updateTotal();
+            // Actualizează zilele disponibile când se schimbă serviciul
+            loadAvailableDays();
         });
         
         // Trigger on page load
@@ -377,12 +393,14 @@ document.addEventListener('DOMContentLoaded', function() {
         locationSalon.addEventListener('change', function() {
             updateAddressField();
             updateTotal();
+            loadAvailableDays();
         });
     }
     if (locationHome) {
         locationHome.addEventListener('change', function() {
             updateAddressField();
             updateTotal();
+            loadAvailableDays();
         });
     }
     
@@ -394,6 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (radio) {
                     radio.checked = true;
                     updateAddressField();
+                    loadAvailableDays();
                 }
             }
         });
@@ -406,6 +425,217 @@ document.addEventListener('DOMContentLoaded', function() {
     if (serviceSelect && serviceSelect.selectedIndex >= 0) {
         serviceSelect.dispatchEvent(new Event('change'));
     }
+
+    // ============ SISTEM SLOTURI DISPONIBILE ============
+    const specialistId = {{ $specialist->id }};
+    let selectedDate = null;
+    let selectedTime = null;
+
+    // Încarcă zilele disponibile
+    function loadAvailableDays() {
+        const dateContainer = document.getElementById('date-picker-container');
+        const location = getSelectedLocation();
+        
+        if (!location) {
+            dateContainer.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Selectează mai întâi locația (salon sau domiciliu).
+                </div>`;
+            return;
+        }
+
+        dateContainer.innerHTML = `
+            <div class="d-flex align-items-center justify-content-center p-4 bg-light rounded">
+                <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                <span class="text-muted">Se încarcă zilele disponibile...</span>
+            </div>`;
+
+        fetch(`/api/specialist/${specialistId}/available-days?location=${location}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.days.length > 0) {
+                    renderDatePicker(data.days);
+                } else {
+                    dateContainer.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Specialistul nu are program setat. Vă rugăm să reveniți mai târziu sau contactați direct specialistul.
+                        </div>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading days:', error);
+                dateContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times-circle me-2"></i>
+                        Eroare la încărcarea zilelor disponibile. Vă rugăm reîncărcați pagina.
+                    </div>`;
+            });
+    }
+
+    // Randează calendarul cu zile disponibile
+    function renderDatePicker(days) {
+        const container = document.getElementById('date-picker-container');
+        let html = '<div class="date-picker-scroll d-flex gap-2 pb-2" style="overflow-x: auto; white-space: nowrap;">';
+        
+        days.forEach(day => {
+            const availableClass = day.available ? 'date-available' : 'date-unavailable';
+            const todayClass = day.is_today ? 'date-today' : '';
+            const tomorrowClass = day.is_tomorrow ? 'date-tomorrow' : '';
+            
+            html += `
+                <div class="date-card ${availableClass} ${todayClass} ${tomorrowClass}" 
+                     data-date="${day.date}" 
+                     data-available="${day.available}"
+                     style="min-width: 80px; text-align: center; padding: 10px; border-radius: 10px; cursor: ${day.available ? 'pointer' : 'not-allowed'}; 
+                            ${day.available ? 'background: #f8f9fa; border: 2px solid #dee2e6;' : 'background: #e9ecef; border: 2px solid #e9ecef; opacity: 0.5;'}">
+                    <div class="fw-bold" style="font-size: 0.75rem; color: ${day.available ? '#6c757d' : '#adb5bd'};">
+                        ${day.is_today ? 'Azi' : (day.is_tomorrow ? 'Mâine' : day.day_name.substring(0, 3))}
+                    </div>
+                    <div class="fw-bold" style="font-size: 1.5rem; color: ${day.available ? '#212529' : '#adb5bd'};">
+                        ${day.day_number}
+                    </div>
+                    <div style="font-size: 0.7rem; color: ${day.available ? '#6c757d' : '#adb5bd'};">
+                        ${day.month}
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        html += '<small class="text-muted mt-2 d-block"><i class="fas fa-info-circle"></i> Glisează pentru a vedea mai multe zile. Zilele colorate pot fi selectate.</small>';
+        
+        container.innerHTML = html;
+        
+        // Adaugă event listeners pentru zile
+        document.querySelectorAll('.date-card[data-available="true"]').forEach(card => {
+            card.addEventListener('click', function() {
+                // Deselectează toate
+                document.querySelectorAll('.date-card').forEach(c => {
+                    c.style.border = c.dataset.available === 'true' ? '2px solid #dee2e6' : '2px solid #e9ecef';
+                    c.style.background = c.dataset.available === 'true' ? '#f8f9fa' : '#e9ecef';
+                });
+                
+                // Selectează aceasta
+                this.style.border = '2px solid #D4AF37';
+                this.style.background = 'linear-gradient(135deg, #FFF9E6, #FFF5D6)';
+                
+                selectedDate = this.dataset.date;
+                document.getElementById('selected_date').value = selectedDate;
+                
+                // Încarcă sloturile disponibile
+                loadAvailableSlots();
+            });
+        });
+    }
+
+    // Obține locația selectată
+    function getSelectedLocation() {
+        if (locationSalon && locationSalon.checked) return 'salon';
+        if (locationHome && locationHome.checked) return 'home';
+        return null;
+    }
+
+    // Încarcă sloturile de timp disponibile
+    function loadAvailableSlots() {
+        const timeSlotsContainer = document.getElementById('time-slots-container');
+        const location = getSelectedLocation();
+        const serviceId = serviceSelect ? serviceSelect.value : null;
+
+        if (!selectedDate || !location || !serviceId) {
+            timeSlotsContainer.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Selectează serviciul, locația și data pentru a vedea orele disponibile.
+                </div>`;
+            return;
+        }
+
+        timeSlotsContainer.innerHTML = `
+            <div class="d-flex align-items-center justify-content-center p-4 bg-light rounded">
+                <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
+                <span class="text-muted">Se încarcă orele disponibile...</span>
+            </div>`;
+
+        fetch(`/api/specialist/${specialistId}/available-slots?date=${selectedDate}&location=${location}&service_id=${serviceId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.slots.length > 0) {
+                    renderTimeSlots(data);
+                } else {
+                    const message = data.message || 'Nu există ore disponibile pentru această zi.';
+                    timeSlotsContainer.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            ${message}
+                        </div>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading slots:', error);
+                timeSlotsContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times-circle me-2"></i>
+                        Eroare la încărcarea orelor disponibile.
+                    </div>`;
+            });
+    }
+
+    // Randează sloturile de timp
+    function renderTimeSlots(data) {
+        const container = document.getElementById('time-slots-container');
+        
+        let html = `
+            <div class="mb-2">
+                <span class="badge bg-success me-2">${data.day_name}</span>
+                <span class="text-muted small">Program: ${data.working_hours.start} - ${data.working_hours.end}</span>
+                <span class="badge bg-info ms-2">Durata: ${data.service_duration} min</span>
+            </div>
+            <div class="time-slots-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px;">
+        `;
+        
+        data.slots.forEach(slot => {
+            html += `
+                <button type="button" class="btn btn-outline-success time-slot-btn" 
+                        data-time="${slot.time}"
+                        style="padding: 8px; font-size: 0.9rem;">
+                    <i class="fas fa-clock me-1"></i>${slot.time}
+                    <small class="d-block text-muted" style="font-size: 0.7rem;">până ${slot.end_time}</small>
+                </button>
+            `;
+        });
+        
+        html += '</div>';
+        html += `<small class="text-muted mt-2 d-block"><i class="fas fa-check-circle text-success"></i> ${data.slots.length} ore disponibile</small>`;
+        
+        container.innerHTML = html;
+        
+        // Event listeners pentru sloturi
+        document.querySelectorAll('.time-slot-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Deselectează toate
+                document.querySelectorAll('.time-slot-btn').forEach(b => {
+                    b.classList.remove('btn-success');
+                    b.classList.add('btn-outline-success');
+                });
+                
+                // Selectează acesta
+                this.classList.remove('btn-outline-success');
+                this.classList.add('btn-success');
+                
+                selectedTime = this.dataset.time;
+                document.getElementById('selected_time').value = selectedTime;
+            });
+        });
+    }
+
+    // Încarcă zilele la pornire dacă avem locație selectată
+    setTimeout(() => {
+        if (getSelectedLocation()) {
+            loadAvailableDays();
+        }
+    }, 500);
 });
 </script>
 

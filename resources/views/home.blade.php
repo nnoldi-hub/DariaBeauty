@@ -86,13 +86,19 @@
                                     <i class="fas fa-map-marker-alt text-danger"></i> Locație:
                                 </label>
                                 <select name="location" class="form-select">
-                                    <option value="">Oriunde în București</option>
-                                    <option value="Sector 1">Sector 1</option>
-                                    <option value="Sector 2">Sector 2</option>
-                                    <option value="Sector 3">Sector 3</option>
-                                    <option value="Sector 4">Sector 4</option>
-                                    <option value="Sector 5">Sector 5</option>
-                                    <option value="Sector 6">Sector 6</option>
+                                    <option value="">Oriunde</option>
+                                    <option value="București">București</option>
+                                    <option value="Sector 1">Sector 1, București</option>
+                                    <option value="Sector 2">Sector 2, București</option>
+                                    <option value="Sector 3">Sector 3, București</option>
+                                    <option value="Sector 4">Sector 4, București</option>
+                                    <option value="Sector 5">Sector 5, București</option>
+                                    <option value="Sector 6">Sector 6, București</option>
+                                    <option value="Ilfov">Ilfov</option>
+                                    <option value="Cluj">Cluj-Napoca</option>
+                                    <option value="Timișoara">Timișoara</option>
+                                    <option value="Brașov">Brașov</option>
+                                    <option value="Constanța">Constanța</option>
                                 </select>
                             </div>
 
@@ -112,7 +118,7 @@
                             <div class="col-12">
                                 <button type="submit" class="btn btn-lg w-100 text-white" 
                                         style="background: linear-gradient(135deg, #D4AF37 0%, #FFD700 100%); border: none; font-weight: 600;">
-                                    <i class="fas fa-search me-2"></i> Caută Specialiști
+                                    <i class="fas fa-search me-2"></i> Caută Specialiști și Saloane
                                 </button>
                             </div>
                         </div>
