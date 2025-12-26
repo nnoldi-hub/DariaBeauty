@@ -3,7 +3,7 @@
 @section('title','Programează-te - '.$specialist->name)
 
 @section('content')
-<div class="container py-5">
+<div class="container" style="padding-top:140px; padding-bottom:60px;">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="mb-0">Programează-te la {{ $specialist->name }}</h1>
     @auth
@@ -40,16 +40,28 @@
                     data-at-salon="{{ $service->available_at_salon ? 'true' : 'false' }}"
                     data-at-home="{{ $service->available_at_home ? 'true' : 'false' }}"
                     data-home-fee="{{ $service->home_service_fee ?? 0 }}"
+                    data-price="{{ $service->price }}"
+                    data-duration="{{ $service->duration }}"
                     {{ optional($selectedService)->id === $service->id ? 'selected' : '' }}>
               {{ $service->name }} - {{ $service->formatted_price }} ({{ $service->formatted_duration }})
             </option>
           @endforeach
         </select>
+        <small class="text-muted mt-1 d-block" id="duration_info">
+          <i class="fas fa-clock text-info"></i> 
+          <span id="selected_duration_text">Durata serviciului va fi rezervată în calendarul specialistului.</span>
+        </small>
       </div>
 
       <!-- Service Location Selection -->
       <div class="col-md-12">
-        <label class="form-label">Unde vrei să primești serviciul? *</label>
+        <label class="form-label fw-bold fs-5 mb-3">
+          <i class="fas fa-map-marker-alt text-primary me-2"></i>Unde vrei să primești serviciul? *
+        </label>
+        <div class="alert alert-info mb-3">
+          <i class="fas fa-info-circle me-2"></i>
+          <strong>Alege unde vrei să beneficiezi de serviciu:</strong> la salon sau la domiciliu
+        </div>
         <div class="row" id="location_options">
           @if($specialist->offers_at_salon)
             <div class="col-md-6 mb-3" id="salon_option">
@@ -114,7 +126,15 @@
             </div>
           @endif
         </div>
-        <small class="text-muted">Selectează unde vrei să beneficiezi de serviciu</small>
+        
+        @if(!$specialist->offers_at_salon && !$specialist->offers_at_home)
+          <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Specialistul nu a configurat încă opțiunile de locație.</strong> Vă rugăm contactați direct specialistul.
+          </div>
+        @else
+          <small class="text-muted">Selectează unde vrei să beneficiezi de serviciu</small>
+        @endif
       </div>
       
       <div class="col-md-6">
@@ -294,12 +314,26 @@ document.addEventListener('DOMContentLoaded', function() {
             const atSalon = selectedOption.dataset.atSalon === 'true';
             const atHome = selectedOption.dataset.atHome === 'true';
             const homeFee = parseFloat(selectedOption.dataset.homeFee) || 0;
+            const duration = parseInt(selectedOption.dataset.duration) || 60;
+            const price = parseFloat(selectedOption.dataset.price) || 0;
+            
+            // Update duration info text
+            const durationText = document.getElementById('selected_duration_text');
+            if (durationText) {
+                const hours = Math.floor(duration / 60);
+                const mins = duration % 60;
+                let durationFormatted = '';
+                if (hours > 0) {
+                    durationFormatted = hours + 'h' + (mins > 0 ? ' ' + mins + ' min' : '');
+                } else {
+                    durationFormatted = mins + ' minute';
+                }
+                durationText.textContent = 'Acest serviciu durează ' + durationFormatted + '. Ora selectată va fi blocată în calendarul specialistului.';
+            }
             
             // Extract service name and price from option text
             const optionText = selectedOption.textContent;
             const serviceName = optionText.split(' - ')[0];
-            const priceMatch = optionText.match(/(\d+)\s*RON/);
-            const servicePrice = priceMatch ? parseFloat(priceMatch[1]) : 0;
             
             // Update current values
             currentServicePrice = servicePrice;

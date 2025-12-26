@@ -18,6 +18,20 @@
                 </div>
             @endif
 
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+
+            @if(session('warning'))
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {{ session('warning') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+
             <!-- Statistics Cards -->
             <div class="row mb-4">
                 <div class="col-md-3">
@@ -116,7 +130,17 @@
                                         <td>{{ $appointment->id }}</td>
                                         <td>
                                             <strong>{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d.m.Y') }}</strong><br>
-                                            <small class="text-muted">{{ \Carbon\Carbon::parse($appointment->appointment_time)->format('H:i') }}</small>
+                                            <small class="text-muted">
+                                                {{ \Carbon\Carbon::parse($appointment->appointment_time)->format('H:i') }}
+                                                @php
+                                                    $duration = $appointment->duration ?? ($appointment->service->duration ?? 60);
+                                                    $endTime = \Carbon\Carbon::parse($appointment->appointment_time)->addMinutes($duration);
+                                                @endphp
+                                                - {{ $endTime->format('H:i') }}
+                                            </small><br>
+                                            <span class="badge bg-secondary" style="font-size: 0.7em;">
+                                                <i class="fas fa-clock"></i> {{ $duration }} min
+                                            </span>
                                         </td>
                                         <td>{{ $appointment->service->name ?? 'N/A' }}</td>
                                         <td>{{ $appointment->client_name }}</td>
@@ -141,7 +165,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <div class="btn-group btn-group-sm" role="group">
+                                            <div class="d-flex gap-1" role="group">
                                                 @if($appointment->status === 'pending')
                                                     <form method="POST" action="{{ route('specialist.appointments.confirm', $appointment->id) }}" class="d-inline">
                                                         @csrf
@@ -157,6 +181,20 @@
                                                             <i class="fas fa-check-double"></i>
                                                         </button>
                                                     </form>
+                                                @endif
+                                                @if($appointment->status === 'completed')
+                                                    <form method="POST" action="{{ route('specialist.appointments.send-review-whatsapp', $appointment->id) }}" class="d-inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-success btn-sm" title="Trimite Review WhatsApp" onclick="return confirm('Sigur vrei să trimiți link-ul de review prin WhatsApp?')">
+                                                            <i class="fab fa-whatsapp"></i>
+                                                        </button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-info btn-sm copy-review-link" 
+                                                            data-appointment-id="{{ $appointment->id }}"
+                                                            data-client-name="{{ $appointment->client_name }}"
+                                                            title="Copiază Link Review">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
                                                 @endif
                                                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#detailsModal{{ $appointment->id }}" title="Detalii">
                                                     <i class="fas fa-eye"></i>
@@ -246,4 +284,76 @@
         </div>
     </div>
 </div>
+
+<!-- Toast Notification -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="copyToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong class="me-auto">Success</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            Link-ul a fost copiat în clipboard!
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle copy review link buttons
+    document.querySelectorAll('.copy-review-link').forEach(button => {
+        button.addEventListener('click', async function() {
+            const appointmentId = this.dataset.appointmentId;
+            const clientName = this.dataset.clientName;
+            const btn = this;
+            
+            // Disable button temporarily
+            btn.disabled = true;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            try {
+                // Generate review token via AJAX
+                const response = await fetch(`/specialist/programari/genereaza-link-review/${appointmentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Copy to clipboard
+                    await navigator.clipboard.writeText(data.link);
+                    
+                    // Show success toast
+                    const toastEl = document.getElementById('copyToast');
+                    const toastMessage = document.getElementById('toastMessage');
+                    toastMessage.innerHTML = `
+                        <strong>Link copiat!</strong><br>
+                        <small class="text-muted">Pentru: ${clientName}</small><br>
+                        <code class="text-break small">${data.link}</code>
+                    `;
+                    const toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                } else {
+                    alert('Eroare: ' + (data.message || 'Nu s-a putut genera link-ul'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Eroare la generarea link-ului. Verifică consola pentru detalii.');
+            } finally {
+                // Re-enable button
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        });
+    });
+});
+</script>
+@endpush

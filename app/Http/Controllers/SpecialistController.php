@@ -208,6 +208,42 @@ class SpecialistController extends Controller
 
         $service = Service::findOrFail($request->service_id);
         
+        // ========== VERIFICARE DISPONIBILITATE ==========
+        // Verificăm dacă ora solicitată nu se suprapune cu programările existente
+        $requestedDate = \Carbon\Carbon::parse($request->date);
+        $requestedTime = \Carbon\Carbon::parse($request->time);
+        $requestedStart = $requestedDate->copy()->setTimeFrom($requestedTime);
+        $requestedEnd = $requestedStart->copy()->addMinutes($service->duration);
+        
+        // Obține toate programările active pentru acest specialist în ziua respectivă
+        $existingAppointments = Appointment::where('specialist_id', $specialist->id)
+            ->whereDate('appointment_date', $request->date)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->with('service')
+            ->get();
+        
+        // Verifică suprapunerea
+        $isOverlapping = false;
+        foreach ($existingAppointments as $existing) {
+            $existingStart = \Carbon\Carbon::parse($existing->appointment_date->format('Y-m-d') . ' ' . $existing->appointment_time);
+            // Folosește durata din programare sau durata serviciului ca fallback
+            $duration = $existing->duration ?? ($existing->service->duration ?? 60);
+            $existingEnd = $existingStart->copy()->addMinutes($duration);
+            
+            // Verifică dacă intervalele se suprapun
+            if ($requestedStart->lt($existingEnd) && $requestedEnd->gt($existingStart)) {
+                $isOverlapping = true;
+                break;
+            }
+        }
+        
+        if ($isOverlapping) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['time' => 'Această oră nu mai este disponibilă. Specialistul are deja o programare în intervalul selectat. Vă rugăm alegeți altă oră.']);
+        }
+        // ========== SFÂRȘIT VERIFICARE DISPONIBILITATE ==========
+        
         $isHomeService = $request->service_location === 'home';
         
         // Calculează totalul cu taxe
@@ -232,6 +268,7 @@ class SpecialistController extends Controller
             'client_phone' => $request->client_phone,
             'appointment_date' => $request->date,
             'appointment_time' => $request->time,
+            'duration' => $service->duration, // Salvăm durata serviciului pentru calcul disponibilitate
             'client_address' => $isHomeService ? $request->address : $specialist->salon_address,
             'notes' => $request->notes,
             'is_home_service' => $isHomeService,
@@ -239,6 +276,28 @@ class SpecialistController extends Controller
             'status' => 'pending',
             'payment_status' => 'pending'
         ]);
+
+        // Incarca relatia service pentru notificare
+        $appointment->load('service');
+
+        // Trimite notificare SMS catre specialist
+        \Log::info("=== BOOKING CREATED - SENDING SMS TO SPECIALIST ===", [
+            'appointment_id' => $appointment->id,
+            'specialist_id' => $specialist->id,
+            'specialist_phone' => $specialist->phone,
+            'client_name' => $appointment->client_name
+        ]);
+
+        try {
+            $smsService = app(\App\Services\SmsService::class);
+            $result = $smsService->notifySpecialistNewAppointment($appointment, $specialist);
+            \Log::info("SMS to specialist result: " . ($result ? 'SUCCESS' : 'FAILED'));
+        } catch (\Exception $e) {
+            \Log::error("Failed to send SMS to specialist", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
 
         $locationText = $isHomeService ? 'la domiciliu' : 'la salon';
         return redirect()->route('specialists.show', $specialist->slug)
@@ -298,6 +357,9 @@ class SpecialistController extends Controller
             'category' => 'required|string',
             'preparation_time' => 'nullable|integer|min:0',
             'equipment_needed' => 'nullable|array',
+            'available_at_salon' => 'nullable|boolean',
+            'available_at_home' => 'nullable|boolean',
+            'home_service_fee' => 'nullable|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
@@ -305,9 +367,17 @@ class SpecialistController extends Controller
         $data['user_id'] = $specialist->id;
         $data['sub_brand'] = $specialist->sub_brand ?? 'dariaNails'; // Default la dariaNails dacă nu e setat
         $data['is_mobile'] = true; // Toate serviciile DariaBeauty sunt mobile
+        
+        // Setă boolean-urile pentru locație
+        $data['available_at_salon'] = $request->has('available_at_salon');
+        $data['available_at_home'] = $request->has('available_at_home');
+        $data['home_service_fee'] = $request->input('home_service_fee', 0);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('services', 'public');
+            $imagePath = $request->file('image');
+            $imageName = time() . '_' . $imagePath->getClientOriginalName();
+            $imagePath->move(public_path('storage/services'), $imageName);
+            $data['image'] = 'services/' . $imageName;
         }
 
         Service::create($data);
@@ -318,14 +388,14 @@ class SpecialistController extends Controller
     /**
      * Editeaza serviciu
      */
-    public function editService(Service $service)
+    public function editService($service_id)
     {
         $specialist = Auth::user();
-
-        // Verifica ca serviciul apartine specialistului
-        if ($service->user_id !== $specialist->id) {
-            abort(403, 'Unauthorized');
-        }
+        
+        // Gaseste serviciul DOAR daca apartine specialistului curent
+        $service = Service::where('id', $service_id)
+                         ->where('user_id', $specialist->id)
+                         ->firstOrFail();
 
         $categories = [
             'Tratamente de baza',
@@ -350,14 +420,14 @@ class SpecialistController extends Controller
     /**
      * Actualizeaza serviciu
      */
-    public function updateService(Request $request, Service $service)
+    public function updateService(Request $request, $service_id)
     {
         $specialist = Auth::user();
-
-        // Verifica ca serviciul apartine specialistului
-        if ($service->user_id !== $specialist->id) {
-            abort(403, 'Unauthorized');
-        }
+        
+        // Gaseste serviciul DOAR daca apartine specialistului curent
+        $service = Service::where('id', $service_id)
+                         ->where('user_id', $specialist->id)
+                         ->firstOrFail();
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -367,17 +437,31 @@ class SpecialistController extends Controller
             'category' => 'required|string',
             'preparation_time' => 'nullable|integer|min:0',
             'equipment_needed' => 'nullable|array',
+            'available_at_salon' => 'nullable|boolean',
+            'available_at_home' => 'nullable|boolean',
+            'home_service_fee' => 'nullable|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
         $data = $request->except(['image']);
+        
+        // Setă boolean-urile pentru locație
+        $data['available_at_salon'] = $request->has('available_at_salon');
+        $data['available_at_home'] = $request->has('available_at_home');
+        $data['home_service_fee'] = $request->input('home_service_fee', 0);
 
         if ($request->hasFile('image')) {
             // Sterge imaginea veche
             if ($service->image) {
-                Storage::disk('public')->delete($service->image);
+                $oldImagePath = public_path('storage/' . $service->image);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
             }
-            $data['image'] = $request->file('image')->store('services', 'public');
+            $imagePath = $request->file('image');
+            $imageName = time() . '_' . $imagePath->getClientOriginalName();
+            $imagePath->move(public_path('storage/services'), $imageName);
+            $data['image'] = 'services/' . $imageName;
         }
 
         $service->update($data);
@@ -388,31 +472,21 @@ class SpecialistController extends Controller
     /**
      * Sterge serviciu
      */
-    public function destroyService(Service $service)
+    public function destroyService($service_id)
     {
         $specialist = Auth::user();
-
-        // DEBUG: Log pentru troubleshooting
-        \Log::info('DELETE Service Debug', [
-            'service_id' => $service->id,
-            'service_user_id' => $service->user_id,
-            'auth_user_id' => $specialist->id,
-            'auth_user_email' => $specialist->email,
-            'match' => ($service->user_id === $specialist->id)
-        ]);
-
-        // Verifica ca serviciul apartine specialistului
-        if ($service->user_id !== $specialist->id) {
-            \Log::error('DELETE Service FAILED - Ownership mismatch', [
-                'service_user_id' => $service->user_id,
-                'auth_user_id' => $specialist->id
-            ]);
-            abort(403, 'Unauthorized');
-        }
+        
+        // Gaseste serviciul DOAR daca apartine specialistului curent
+        $service = Service::where('id', $service_id)
+                         ->where('user_id', $specialist->id)
+                         ->firstOrFail();
 
         // Sterge imaginea
         if ($service->image) {
-            Storage::disk('public')->delete($service->image);
+            $imagePath = public_path('storage/' . $service->image);
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
         }
 
         $service->delete();
@@ -448,7 +522,10 @@ class SpecialistController extends Controller
             'is_featured' => 'nullable|boolean'
         ]);
 
-        $imagePath = $request->file('image')->store('gallery', 'public');
+        $imageFile = $request->file('image');
+        $imageName = time() . '_' . $imageFile->getClientOriginalName();
+        $imageFile->move(public_path('storage/gallery'), $imageName);
+        $imagePath = 'gallery/' . $imageName;
 
         $tags = $request->tags ? explode(',', $request->tags) : [];
 
@@ -469,14 +546,14 @@ class SpecialistController extends Controller
     /**
      * Actualizeaza imagine din galerie
      */
-    public function updateGalleryImage(Request $request, Gallery $image)
+    public function updateGalleryImage(Request $request, $gallery_id)
     {
         $specialist = Auth::user();
 
-        // Verifica ca imaginea apartine specialistului
-        if ($image->user_id !== $specialist->id) {
-            abort(403, 'Unauthorized');
-        }
+        // Gaseste imaginea DOAR daca apartine specialistului curent
+        $image = Gallery::where('id', $gallery_id)
+                       ->where('user_id', $specialist->id)
+                       ->firstOrFail();
 
         $request->validate([
             'caption' => 'nullable|string|max:255',
@@ -498,18 +575,21 @@ class SpecialistController extends Controller
     /**
      * Sterge imagine din galerie
      */
-    public function destroyGalleryImage(Gallery $image)
+    public function destroyGalleryImage($gallery_id)
     {
         $specialist = Auth::user();
 
-        // Verifica ca imaginea apartine specialistului
-        if ($image->user_id !== $specialist->id) {
-            abort(403, 'Unauthorized');
-        }
+        // Gaseste imaginea DOAR daca apartine specialistului curent
+        $image = Gallery::where('id', $gallery_id)
+                       ->where('user_id', $specialist->id)
+                       ->firstOrFail();
 
         // Sterge fisierul
         if ($image->image_path) {
-            Storage::disk('public')->delete($image->image_path);
+            $imageFullPath = public_path('storage/' . $image->image_path);
+            if (file_exists($imageFullPath)) {
+                unlink($imageFullPath);
+            }
         }
 
         $image->delete();
@@ -627,9 +707,15 @@ class SpecialistController extends Controller
         if ($request->hasFile('profile_image')) {
             // Sterge imaginea veche
             if ($specialist->profile_image) {
-                Storage::disk('public')->delete($specialist->profile_image);
+                $oldImagePath = public_path('storage/' . $specialist->profile_image);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
             }
-            $data['profile_image'] = $request->file('profile_image')->store('profiles', 'public');
+            $imagePath = $request->file('profile_image');
+            $imageName = time() . '_' . $imagePath->getClientOriginalName();
+            $imagePath->move(public_path('storage/profiles'), $imageName);
+            $data['profile_image'] = 'profiles/' . $imageName;
         }
 
         $specialist->update($data);

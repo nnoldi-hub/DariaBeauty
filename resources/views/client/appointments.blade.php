@@ -101,7 +101,15 @@
                                         <tr>
                                             <td>
                                                 <strong>{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('d.m.Y') }}</strong><br>
-                                                <small class="text-muted">{{ $appointment->appointment_time }}</small>
+                                                @php
+                                                    $duration = $appointment->duration ?? ($appointment->service->duration ?? 60);
+                                                    $startTime = \Carbon\Carbon::parse($appointment->appointment_time);
+                                                    $endTime = $startTime->copy()->addMinutes($duration);
+                                                @endphp
+                                                <small class="text-muted">{{ $startTime->format('H:i') }} - {{ $endTime->format('H:i') }}</small><br>
+                                                <span class="badge bg-secondary" style="font-size: 0.65em;">
+                                                    <i class="fas fa-clock"></i> {{ $duration }} min
+                                                </span>
                                             </td>
                                             <td>
                                                 <a href="{{ route('specialists.show', $appointment->specialist->slug) }}">

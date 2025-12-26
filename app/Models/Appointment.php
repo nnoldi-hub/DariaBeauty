@@ -46,7 +46,9 @@ class Appointment extends Model
         'service_id',
         'appointment_date',
         'appointment_time',
+        'duration', // durata în minute (copiată de la serviciu)
         'status', // pending, confirmed, completed, cancelled
+        'completed_at',
         'notes',
         // Campuri pentru servicii la domiciliu
         'is_home_service',
@@ -65,7 +67,9 @@ class Appointment extends Model
 
     protected $casts = [
         'appointment_date' => 'date',
-    'appointment_time' => 'string',
+        'appointment_time' => 'string',
+        'duration' => 'integer', // durata în minute
+        'completed_at' => 'datetime',
         'is_home_service' => 'boolean',
         'distance_km' => 'decimal:2',
         'transport_fee' => 'decimal:2',
@@ -92,6 +96,11 @@ class Appointment extends Model
     public function review()
     {
         return $this->hasOne(Review::class);
+    }
+
+    public function smsLogs()
+    {
+        return $this->hasMany(\App\Models\SmsLog::class);
     }
 
     // Scopes
